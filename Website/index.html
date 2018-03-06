@@ -53,13 +53,41 @@
                <center> Play your friends in Rock, Paper, Scissors! </center>
             </b>
         </h1>
+        <div>
+            <div align="right">
+                <div>
+                    <input id="ethAmount" type="number">
+                    <button onclick="createMatch()">Create RPS Match</button>
+                </div>
+            </div>
+            <div align="center">
+                <h2>Make your move!</h2>
+                <div id="gameList">
+                    <div>
+<!--                         <div>
+                            <span>Challenger: </span>
+                            <span id="chalAcc">0x3894712903</span>
+                            <span>---</span>
+                            <span>Amount: </span>
+                            <span id="chalAmount">0.23</span>
+                            <span> Eth</span>
+                        </div>
+                        <div>
+                            <button id="rock" onclick="shoot(this)">Rock</button>
+                            <button id="paper" onclick="shoot(this)">Paper</button>
+                            <button id="scissor" onclick="shoot(this)">Scissor</button>
+                        </div>
+                        <br><br> -->
+                    </div>
+                </div>
+            </div>
+        </div>
         <footer>
             <p> </p>
             <center> Made by some college kids </center>
             <p></p>
         </footer>
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/ethjs@0.3.0/dist/ethjs.min.js"></script>
-
+        <script src="assets/js/ethjs.js"></script>
         <script src="assets/js/jquery-3.js"></script>
         <script src="assets/js/RPS.js"></script>
     </div>
