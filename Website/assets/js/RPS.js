@@ -100,8 +100,8 @@ function createMatch(){
     acc = accounts[0]
     ethAmount = $("#ethAmount").val()
   })
-  .then(createBlock(acc, ethAmount)) // Create match on the blockchain
-  .then(createListing(acc, ethAmount)) // Create a listing of the match on the website
+  .then(createBlock(acc, ethAmount)) // Create rps match on the blockchain
+  .then(createListing(acc, ethAmount)) // Create a listing of the rps match on the website
   .catch(function(err)
   {
     console.error(err)
