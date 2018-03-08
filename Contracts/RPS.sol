@@ -33,7 +33,7 @@ contract RPS{
 	RPSMatch[] private _matches;	// An array of all RPS matches, ongoing and completed
 
 	// @dev A mapping of player addresses to the number of matches that player has either created or been an opponent in. Note, a created match that hasn't been played out IS counted 
-	mapping(address => uint32) private _playerToNumMatches; // Note on uint32: A player playing over 4 billion games is highly unlikely
+	mapping(address => uint32) public playerToNumMatches; // Note on uint32: A player playing over 4 billion games is highly unlikely
 
 	/** EVENTS **/
 	event MatchCreated(uint256 matchId, address creator, uint256 wager);
@@ -82,15 +82,16 @@ contract RPS{
 		uint256 _matchId = _matches.push(_match) - 1;
 
 		numActiveMatches = numActiveMatches.add(1);	// Increment the number of active RPS matches
-		_playerToNumMatches[msg.sender] = _playerToNumMatches[msg.sender].add(1);	// Increment number of matches by this player
+		playerToNumMatches[_match.creator] = playerToNumMatches[_match.creator].add(1);	// Increment number of matches by this player
 
 		emit MatchCreated(_matchId, _match.creator, _match.wager);	// Trigger the MatchCreated event
 		return _matchId;	// Return matchId after creating it
 	}
 
 	// @notice Gets all match IDs associated to a specific player (ie. address)
+	// ****** NOTICE: For some reason, this function does not work! No matter the given address, matchIds is always empty
 	function getMatchIDsOfAddress(address _player) external view activeContract() returns(uint256[] matchIds){
-		uint32 _numMatches = _playerToNumMatches[_player];	// Number of matches associated to this player
+		uint32 _numMatches = playerToNumMatches[_player];	// Number of matches associated to this player
 		uint256[] memory _ids = new uint256[](_numMatches);
 		uint32 _pos = 0;	//uint32 to match _numMatches type
 
