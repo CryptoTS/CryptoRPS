@@ -25,7 +25,8 @@ contract RPS{
 	/** Variables **/
 	address public contractOwner;	// The initial and true contract owner
 	address public contractAdmin;	// A secondary contract administrator, if needed
-	bool private _isContractActive;	// Determines if the contract (and hence the game/website) is active
+	bool private _isContractActive;	// Determines if the contract (and hence the RPS game/website) is active
+	uint32 public numActiveMatches;	// A counter for the number of active RPS matches
 
 
 	/** STORAGE **/
@@ -77,15 +78,26 @@ contract RPS{
 			outcome: 0			// Game is undecided on creation
 			});
 		uint256 _matchId = _matches.push(_match) - 1;
+		numActiveMatches = numActiveMatches.add(1); // Increment the number of active RPS matches
 
 		emit MatchCreated(_matchId, _match.creator, _match.wager);	// Trigger the MatchCreated event
 		return _matchId;	// Return matchId after creating it
 	}
 
-	// @notice Gets all active matches (with outcome code == 0)
-	// @dev matches is a JSON object
-	function getActiveMatches() external view returns(string matches){
-		
+	// @notice Gets all active match IDs (with outcome code == 0)
+	function getActiveMatchIDs() external view returns(uint256[] matchIds){
+		uint256[] memory _ids = new uint256[](numActiveMatches);
+		uint32 pos = 0;	//uint32 to match numActiveMatches type
+
+		// Loops until the end of _matches OR until we have all the activeMatches
+		for(uint i = 0; i < _matches.length && _ids.length == numActiveMatches; i++){
+			if(_matches[i].outcome == 0){
+				_ids[pos] = i;
+				pos = pos.add(1);
+			}
+		}
+
+		return _ids;
 	}
 
 	// @notice Gets a specified match's creator address, opponent address, wager amount, and outcome code. Outcome Code : -1 == creator won; 0 == match not finished; 1 == opponent won
