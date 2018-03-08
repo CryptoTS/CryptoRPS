@@ -76,7 +76,7 @@ contract RPS{
 		RPSMatch memory _match = RPSMatch({	// Create a RPSMatch in memory
 			creator: msg.sender,
 			opponent: msg.sender,	// Initially set like this so worse-case scenario is creator sends money to themselves
-			wager: msg.value,
+			wager: msg.value,	// In Wei (1 Eth = 1000000000000000000 Wei)
 			outcome: 0			// Game is undecided on creation
 			});
 		uint256 _matchId = _matches.push(_match) - 1;
