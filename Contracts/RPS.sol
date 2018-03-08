@@ -69,22 +69,28 @@ contract RPS{
 
 	/** PUBLIC FUNCTIONS **/
 	// @notice Creates an RPS match
-	function createMatch() external payable return (uint256 matchId) activeContract(){
+	function createMatch() external payable activeContract() returns (uint256 matchId){
 		RPSMatch memory _match = RPSMatch({	// Create a RPSMatch in memory
-			creater = msg.sender;
-			opponent = msg.sender;	// Initially set like this so worse-case scenario is creator sends money to themselves
-			wager = msg.value;
-			outcome = 0;			// Game is undecided on creation
+			creator: msg.sender,
+			opponent: msg.sender,	// Initially set like this so worse-case scenario is creator sends money to themselves
+			wager: msg.value,
+			outcome: 0			// Game is undecided on creation
 			});
 		uint256 _matchId = _matches.push(_match) - 1;
 
-		MatchCreated(_matchId, _match.creator, _match.wager);	// Trigger the MatchCreated event
+		emit MatchCreated(_matchId, _match.creator, _match.wager);	// Trigger the MatchCreated event
 		return _matchId;	// Return matchId after creating it
 	}
 
-	// @notice Gets a specified match's creator address, opponent address, wager amount, and outcome code. Outcome Code : -1 = creator won; 0 = match not finished; 1 = opponent won
+	// @notice Gets all active matches (with outcome code == 0)
+	// @dev matches is a JSON object
+	function getActiveMatches() external view returns(string matches){
+		
+	}
+
+	// @notice Gets a specified match's creator address, opponent address, wager amount, and outcome code. Outcome Code : -1 == creator won; 0 == match not finished; 1 == opponent won
 	// @param _matchId The match ID to get data from
-	function getMatch(uint256 _matchId) external view returns(address creator, address opponent, uint256 wager, int8 outcome) activeContract(){
+	function getMatch(uint256 _matchId) public view activeContract() returns(address creator, address opponent, uint256 wager, int8 outcome){
 		RPSMatch memory _match = _matches[_matchId];
 		return (_match.creator, _match.opponent, _match.wager, _match.outcome);
 	}
