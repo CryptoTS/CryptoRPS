@@ -9,6 +9,7 @@ contract RPS{
 	using SafeMath32 for uint32;
 	using SafeMath8 for uint8;
 
+
 	/** DATATYPES **/
 	struct RPSMatch {
 		address creator;	// Person who initiates RPS match
@@ -17,7 +18,9 @@ contract RPS{
 		int8 outcome;		// Outcome of RPSMatch; -1 if creator won, 0 if match is not finished, 1 if opponent won
 	}
 
+
 	/** CONSTANTS **/
+
 
 	/** Variables **/
 	address public contractOwner;	// The initial and true contract owner
@@ -28,8 +31,10 @@ contract RPS{
 	/** STORAGE **/
 	RPSMatch[] private _matches;	// An array of all RPS matches, ongoing and completed
 
+
 	/** EVENTS **/
 	event MatchCreated(uint256 matchId, address creator, uint256 wager);
+
 
 	/** MODIFIERS **/
 	// @notice Determines if contract is active. In case the website needs to be killed, this will stop any functions from firing 
@@ -52,6 +57,7 @@ contract RPS{
 		_;
 	}
 
+
 	/** CONSTRUCTORS **/
 	function RPS() public{
 		contractOwner = msg.sender;
@@ -59,6 +65,7 @@ contract RPS{
 		_isContractActive = true;	// Initiallize the contract to be active
 									// Maybe we shouldn't do this...? But instead manually?
 	}
+
 
 	/** PUBLIC FUNCTIONS **/
 	// @notice Creates an RPS match
