@@ -26,7 +26,7 @@ contract RPS{
 	address public contractOwner;	// The initial and true contract owner
 	address public contractAdmin;	// A secondary contract administrator, if needed
 	bool private _isContractActive;	// Determines if the contract (and hence the RPS game/website) is active
-	uint32 public numActiveMatches;	// A counter for the number of active RPS matches
+	uint32 public activeMatchCounter;	// A counter for the number of active RPS matches
 
 
 	/** STORAGE **/
@@ -82,7 +82,7 @@ contract RPS{
 			});
 		uint256 _matchId = _matches.push(_match) - 1;
 
-		numActiveMatches = numActiveMatches.add(1);	// Increment the number of active RPS matches
+		activeMatchCounter = activeMatchCounter.add(1);	// Increment the number of active RPS matches
 		playerToNumMatches[_match.creator] = playerToNumMatches[_match.creator].add(1);	// Increment number of matches by this player
 
 		emit MatchCreated(_matchId, _match.creator, _match.wager);	// Trigger the MatchCreated event
@@ -96,7 +96,7 @@ contract RPS{
 		uint32 _pos = 0;	//uint32 to match _numMatches type
 
 		// Loops until the end of _matches OR until we have all the activeMatches
-		for(uint i = 0; i < _matches.length && _ids.length != numActiveMatches; i++){
+		for(uint i = 0; i < _matches.length && _ids.length != activeMatchCounter; i++){
 		    if(_matches[i].creator == _player || _matches[i].opponent == _player){
 				_ids[_pos] = i;
 				_pos = _pos.add(1);
@@ -109,11 +109,11 @@ contract RPS{
 	// @notice Gets all active match IDs (with outcome code == 0)
 	// @dev I do a safety != address(0) check just in case
 	function getActiveMatchIDs() external view activeContract() returns(uint256[] matchIds){
-		uint256[] memory _ids = new uint256[](numActiveMatches);
-		uint32 _pos = 0;	//uint32 to match numActiveMatches type
+		uint256[] memory _ids = new uint256[](activeMatchCounter);
+		uint32 _pos = 0;	//uint32 to match activeMatchCounter type
 
 		// Loops until the end of _matches OR until we have all the activeMatches
-		for(uint i = 0; i < _matches.length && _ids.length != numActiveMatches; i++){
+		for(uint i = 0; i < _matches.length && _ids.length != activeMatchCounter; i++){
 			if(_matches[i].creator != address(0) && _matches[i].outcome == 0){	// Ensure valid match and is active
 				_ids[_pos] = i;
 				_pos = _pos.add(1);
@@ -124,14 +124,14 @@ contract RPS{
 	}
 
 	// @notice Gets the number of ongoing RPS Matches by the caller
-	// @dev Uses more general getNumActiveMatches(address) function. This is mostly for laziness on js-side
-	function getNumActiveMatches() external view activeContract() returns(uint32 activeMatches){
-		return getNumActiveMatches(msg.sender);
+	// @dev Uses more general getNumActiveMatchesFor(address) function. This is mostly for laziness on js-side
+	function getNumActiveMatchesFor() external view activeContract() returns(uint32 activeMatches){
+		return getNumActiveMatchesFor(msg.sender);
 	}
 
 	// @notice Get the number of ongoing RPS Matches by the specified address. This means they are either waiting for an opponent, or playing one currently
 	// @dev I do a safety != address(0) check just in case
-	function getNumActiveMatches(address _player) public view activeContract() returns(uint32 activeMatches){
+	function getNumActiveMatchesFor(address _player) public view activeContract() returns(uint32 activeMatches){
 		uint32 counter = 0;
 
 		for(uint i = 0; i < _matches.length; i++){	// Go through all matches
@@ -187,7 +187,7 @@ contract RPS{
 				_match.opponent.transfer(_match.wager);	// Transfer their wager funds back to them as well
 			}
 
-			numActiveMatches = numActiveMatches.sub(1);
+			activeMatchCounter = activeMatchCounter.sub(1);
 			emit MatchKilled(_matchId, _match.creator, _match.wager, oppAddress, oppRefund);
 		}
 	}
