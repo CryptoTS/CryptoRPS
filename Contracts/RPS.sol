@@ -15,7 +15,7 @@ contract RPS{
 		address creator;	// Person who initiates RPS match
 		address opponent;	// Person who ends up playing Creator's Match
 		uint256 wager;		// Amount of money wagered by the creator
-		int8 outcome;		// Outcome of RPSMatch; -1 if creator won, 0 if match is not finished, 1 if opponent won
+		int8 outcome;		// Outcome of RPSMatch; -2 if match was killed, -1 if creator won, 0 if match is not finished, 1 if opponent won
 	}
 
 
@@ -166,6 +166,24 @@ contract RPS{
 	// @param _isActive Sets contract to be active or not
 	function setContractActive(bool _isActive) external isAdmin(){
 		_isContractActive = _isActive;
+	}
+
+	// @notice Kills an *ongoing* match and returns wagers to appropriate addresses. Callable only by the admins or higher
+	// @dev To reduce gas cost, 
+	function killMatch(uint256 _matchId) external isAdmin() returns(bool wasKilled){
+		RPSMatch memory _match = _matches[_matchId];
+		if(_match.creator == address(0) || _match.outcome == 0){	// Check if the match is a valid, ongoing match
+			return false;	// Invalid/complete match, so don't return any funds
+		}
+
+		_matches[_matchId].outcome = -2;	// To avoid re-entrancy vulnerability, set outcome of match to killed before transfer
+		
+		_match.creator.transfer(_match.wager);	// Transfer the wager funds back to creator
+		
+		if(_match.creator != _match.opponent){	// If an opponent has also put in money to this ongoing match
+			_match.opponent.transfer(_match.wager);	// Transfer their wager funds back to them as well
+		}
+		return true;
 	}
 	
 	/** PRIVATE METHODS **/
