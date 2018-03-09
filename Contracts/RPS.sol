@@ -38,6 +38,7 @@ contract RPS{
 	/** EVENTS **/
 	event MatchCreated(uint256 matchId, address creator, uint256 wager);
 
+    event logTest(string message); // For development purposes
 
 	/** MODIFIERS **/
 	// @notice Determines if contract is active. In case the website needs to be killed, this will stop any functions from firing 
@@ -85,19 +86,19 @@ contract RPS{
 		playerToNumMatches[_match.creator] = playerToNumMatches[_match.creator].add(1);	// Increment number of matches by this player
 
 		emit MatchCreated(_matchId, _match.creator, _match.wager);	// Trigger the MatchCreated event
+		
 		return _matchId;	// Return matchId after creating it
 	}
 
 	// @notice Gets all match IDs associated to a specific player (ie. address)
-	// ****** NOTICE: For some reason, this function does not work! No matter the given address, matchIds is always empty
 	function getMatchIDsOfAddress(address _player) external view activeContract() returns(uint256[] matchIds){
 		uint32 _numMatches = playerToNumMatches[_player];	// Number of matches associated to this player
 		uint256[] memory _ids = new uint256[](_numMatches);
 		uint32 _pos = 0;	//uint32 to match _numMatches type
 
 		// Loops until the end of _matches OR until we have all the activeMatches
-		for(uint i = 0; i < _matches.length && _ids.length == _numMatches; i++){
-			if(_matches[i].creator == _player || _matches[i].opponent == _player){
+		for(uint i = 0; i < _matches.length && _ids.length != numActiveMatches; i++){
+		    if(_matches[i].creator == _player || _matches[i].opponent == _player){
 				_ids[_pos] = i;
 				_pos = _pos.add(1);
 			}
@@ -112,7 +113,7 @@ contract RPS{
 		uint32 _pos = 0;	//uint32 to match numActiveMatches type
 
 		// Loops until the end of _matches OR until we have all the activeMatches
-		for(uint i = 0; i < _matches.length && _ids.length == numActiveMatches; i++){
+		for(uint i = 0; i < _matches.length && _ids.length != numActiveMatches; i++){
 			if(_matches[i].outcome == 0){
 				_ids[_pos] = i;
 				_pos = _pos.add(1);
@@ -120,6 +121,26 @@ contract RPS{
 		}
 
 		return _ids;
+	}
+
+	// @notice Gets the number of ongoing RPS Matches by the caller
+	// @dev Uses more general getNumActiveMatches(address) function. This is mostly for laziness on js-side
+	function getNumActiveMatches() external view activeContract() returns(uint32 activeMatches){
+		return getNumActiveMatches(msg.sender);
+	}
+
+	// @notice Get the number of ongoing RPS Matches by the specified address. This means they are either waiting for an opponent, or playing one currently
+	function getNumActiveMatches(address _player) public view activeContract() returns(uint32 activeMatches){
+		uint32 counter = 0;
+
+		for(uint i = 0; i < _matches.length; i++){	// Go through all matches
+			if(_matches[i].outcome == 0 &&	// If the match is ongoing
+				(_matches[i].creator == _player || _matches[i].opponent == _player)){	// And either the creator or opponent is the _player
+				counter = counter.add(1);	// Then the _player is in an active match
+			}
+		}
+
+		return counter;
 	}
 
 	// @notice Gets a specified match's creator address, opponent address, wager amount, and outcome code. Outcome Code : -1 == creator won; 0 == match not finished; 1 == opponent won
@@ -146,4 +167,7 @@ contract RPS{
 	function setContractActive(bool _isActive) external isAdmin(){
 		_isContractActive = _isActive;
 	}
+	
+	/** PRIVATE METHODS **/
+	
 }
