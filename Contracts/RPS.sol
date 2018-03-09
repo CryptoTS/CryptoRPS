@@ -38,7 +38,7 @@ contract RPS{
 	/** EVENTS **/
 	event MatchCreated(uint256 matchId, address creator, uint256 wager);
 
-    event logTest(string message); // For development purposes
+    event MatchKilled(uint256 matchId, address creator, uint256 creatorRefund, address opponent, uint256 opponentRefuned);
 
 	/** MODIFIERS **/
 	// @notice Determines if contract is active. In case the website needs to be killed, this will stop any functions from firing 
@@ -73,7 +73,7 @@ contract RPS{
 
 	/** PUBLIC FUNCTIONS **/
 	// @notice Creates an RPS match
-	function createMatch() external payable activeContract() returns (uint256 matchId){
+	function createMatch() external payable activeContract(){
 		RPSMatch memory _match = RPSMatch({	// Create a RPSMatch in memory
 			creator: msg.sender,
 			opponent: msg.sender,	// Initially set like this so worse-case scenario is creator sends money to themselves
@@ -86,8 +86,6 @@ contract RPS{
 		playerToNumMatches[_match.creator] = playerToNumMatches[_match.creator].add(1);	// Increment number of matches by this player
 
 		emit MatchCreated(_matchId, _match.creator, _match.wager);	// Trigger the MatchCreated event
-		
-		return _matchId;	// Return matchId after creating it
 	}
 
 	// @notice Gets all match IDs associated to a specific player (ie. address)
@@ -169,21 +167,25 @@ contract RPS{
 	}
 
 	// @notice Kills an *ongoing* match and returns wagers to appropriate addresses. Callable only by the admins or higher
-	// @dev To reduce gas cost, 
-	function killMatch(uint256 _matchId) external isAdmin() returns(bool wasKilled){
+	function killMatch(uint256 _matchId) external isAdmin(){
 		RPSMatch memory _match = _matches[_matchId];
 		if(_match.creator == address(0) || _match.outcome != 0){	// Check if the match is a valid, ongoing match
-			return false;	// Invalid/complete match, so don't return any funds
-		}
+			emit MatchKilled(_matchId, address(0), 0, 0, address(0));	// Invalid/complete match, so don't return any funds
+		}else{
+			address memory oppAddress = address(0);
+			uint256 oppRefund = 0;
 
-		_matches[_matchId].outcome = -2;	// To avoid re-entrancy vulnerability, set outcome of match to killed before transfer
-		
-		_match.creator.transfer(_match.wager);	// Transfer the wager funds back to creator
-		
-		if(_match.creator != _match.opponent){	// If an opponent has also put in money to this ongoing match
-			_match.opponent.transfer(_match.wager);	// Transfer their wager funds back to them as well
+			_matches[_matchId].outcome = -2;	// To avoid re-entrancy vulnerability, set outcome of match to killed before transfer
+			_match.creator.transfer(_match.wager);	// Transfer the wager funds back to creator
+			
+			if(_match.creator != _match.opponent){	// If an opponent has also put in money to this ongoing match
+				oppAddress = _match.opponent;
+				oppRefund = _match.wager;
+				_match.opponent.transfer(_match.wager);	// Transfer their wager funds back to them as well
+			}
+
+			emit MatchKilled(_matchId, _match.creator, _match.wager, oppAddress, oppRefund);
 		}
-		return true;
 	}
 	
 	/** PRIVATE METHODS **/
