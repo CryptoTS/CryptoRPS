@@ -7,50 +7,12 @@ var moveMap = new Map();
 const abi = [
   {
     "constant": true,
-    "inputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "playerToNumMatches",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
     "inputs": [],
     "name": "numActiveMatches",
     "outputs": [
       {
         "name": "",
         "type": "uint32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "_player",
-        "type": "address"
-      }
-    ],
-    "name": "getMatchIDsOfAddress",
-    "outputs": [
-      {
-        "name": "matchIds",
-        "type": "uint256[]"
       }
     ],
     "payable": false,
@@ -103,17 +65,45 @@ const abi = [
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "contractOwner",
-    "outputs": [
+    "constant": false,
+    "inputs": [
       {
-        "name": "",
+        "name": "_to",
         "type": "address"
       }
     ],
+    "name": "transferOwner",
+    "outputs": [],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_matchId",
+        "type": "uint256"
+      }
+    ],
+    "name": "killMatch",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_to",
+        "type": "address"
+      }
+    ],
+    "name": "transferAdmin",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -129,6 +119,120 @@ const abi = [
     "payable": false,
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getNumActiveMatches",
+    "outputs": [
+      {
+        "name": "activeMatches",
+        "type": "uint32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_isActive",
+        "type": "bool"
+      }
+    ],
+    "name": "setContractActive",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "createMatch",
+    "outputs": [],
+    "payable": true,
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "playerToNumMatches",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_player",
+        "type": "address"
+      }
+    ],
+    "name": "getNumActiveMatches",
+    "outputs": [
+      {
+        "name": "activeMatches",
+        "type": "uint32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "contractOwner",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_player",
+        "type": "address"
+      }
+    ],
+    "name": "getMatchIDsOfAddress",
+    "outputs": [
+      {
+        "name": "matchIds",
+        "type": "uint256[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
   },
   {
     "anonymous": false,
@@ -153,80 +257,38 @@ const abi = [
     "type": "event"
   },
   {
-    "constant": false,
-    "inputs": [],
-    "name": "createMatch",
-    "outputs": [
-      {
-        "name": "matchId",
-        "type": "uint256"
-      }
-    ],
-    "payable": true,
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
         "indexed": false,
-        "name": "message",
-        "type": "string"
+        "name": "matchId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "creatorRefund",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "opponent",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "opponentRefuned",
+        "type": "uint256"
       }
     ],
-    "name": "logTest",
+    "name": "MatchKilled",
     "type": "event"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_isActive",
-        "type": "bool"
-      }
-    ],
-    "name": "setContractActive",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_to",
-        "type": "address"
-      }
-    ],
-    "name": "transferAdmin",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_to",
-        "type": "address"
-      }
-    ],
-    "name": "transferOwner",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "constructor"
   }];
-const address = "0xEb5795512a26791a4E1B08bf5d22A0e38aA4a35B";
+const address = "0x252dDC0A3309461EDad16F8b027047205fD055A1";
 var contract;
 var canCreateMatch = true; // The player can only have one match up at a time
 
@@ -235,6 +297,21 @@ window.addEventListener('load', function() {
 
   if(web3js !== 'undefined'){
     contract = new web3js.eth.Contract(abi, address) // Obtain contract with specified abi and address
+
+    web3js.eth.getAccounts()
+    .then(function(accounts){
+      var activeMatchesOps = {
+        from: accounts[0]
+      }
+
+      // Set canCreateMatch based on contract data
+      contract.methods.getNumActiveMatches().call(activeMatchesOps)  // Call hasActiveMatch() w/ specified options
+      .then(function (result){
+        canCreateMatch = !(result > 0)  // If this player has more than 0 active matches, they cannot create matches 
+        console.log(result)
+      })
+    })
+
     startApp() // Then after obtaining, startApp
     // Now you can start your app & access web3 freely:
   }else{
@@ -341,15 +418,15 @@ function createMatch(){
   })
   .then(function (){  // Create rps match on the blockchain
     if(ethAmount !== 'undefined' && ethAmount > 0){
-      var matchTxOps = {
+      var createMatchOps = {
         from: acc,
         value: web3js.utils.toWei(ethAmount, 'ether')  // Solidity Contract is payable with Wei, not ether
       }
 
-      contract.methods.createMatch().send(matchTxOps) // Send createMatch() w/ specified options
+      contract.methods.createMatch().send(createMatchOps) // Send createMatch() w/ specified options
       .on('transactionHash', function(hash){  // When blockchain revieves function request
         canCreateMatch = false  // Player is in the process of creating match. Cannot create another
-        console.log(hash)
+        console.log("Starting transaction...")
       })
       .on('receipt', function(receipt){  // When blockchain has finished function execution
         console.log(receipt)
