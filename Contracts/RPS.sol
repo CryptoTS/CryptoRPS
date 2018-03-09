@@ -172,7 +172,7 @@ contract RPS{
 	// @dev To reduce gas cost, 
 	function killMatch(uint256 _matchId) external isAdmin() returns(bool wasKilled){
 		RPSMatch memory _match = _matches[_matchId];
-		if(_match.creator == address(0) || _match.outcome == 0){	// Check if the match is a valid, ongoing match
+		if(_match.creator == address(0) || _match.outcome != 0){	// Check if the match is a valid, ongoing match
 			return false;	// Invalid/complete match, so don't return any funds
 		}
 
