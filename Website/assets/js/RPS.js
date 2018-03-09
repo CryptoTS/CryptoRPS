@@ -288,7 +288,7 @@ const abi = [
     "name": "MatchKilled",
     "type": "event"
   }];
-const address = "0x252dDC0A3309461EDad16F8b027047205fD055A1";
+const address = "0xFdFeE25A108d79453c3d116D5fb9681AdeD81DE1";
 var contract;
 var canCreateMatch = true; // The player can only have one match up at a time
 
