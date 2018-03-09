@@ -1,48 +1,267 @@
-// Modified from https://github.com/MetaMask/faq/blob/master/DEVELOPERS.md#partly_sunny-web3---ethereum-browser-environment-check
-var eth 
+var web3js 
 var moveMap = new Map();
     moveMap.set('rock', 0);
     moveMap.set('paper', 1);
     moveMap.set('scissor', 2);
 
+const abi = [
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "playerToNumMatches",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "numActiveMatches",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_player",
+        "type": "address"
+      }
+    ],
+    "name": "getMatchIDsOfAddress",
+    "outputs": [
+      {
+        "name": "matchIds",
+        "type": "uint256[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_matchId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getMatch",
+    "outputs": [
+      {
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "name": "opponent",
+        "type": "address"
+      },
+      {
+        "name": "wager",
+        "type": "uint256"
+      },
+      {
+        "name": "outcome",
+        "type": "int8"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getActiveMatchIDs",
+    "outputs": [
+      {
+        "name": "matchIds",
+        "type": "uint256[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "contractOwner",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "contractAdmin",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "matchId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "wager",
+        "type": "uint256"
+      }
+    ],
+    "name": "MatchCreated",
+    "type": "event"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "createMatch",
+    "outputs": [
+      {
+        "name": "matchId",
+        "type": "uint256"
+      }
+    ],
+    "payable": true,
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "message",
+        "type": "string"
+      }
+    ],
+    "name": "logTest",
+    "type": "event"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_isActive",
+        "type": "bool"
+      }
+    ],
+    "name": "setContractActive",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_to",
+        "type": "address"
+      }
+    ],
+    "name": "transferAdmin",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_to",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwner",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  }];
+const address = "0xEb5795512a26791a4E1B08bf5d22A0e38aA4a35B";
+var contract;
+var canCreateMatch = true; // The player can only have one match up at a time
+
 window.addEventListener('load', function() {
-  eth = new Eth(new Eth.HttpProvider('http://localhost:8501'));
+  web3js = new Web3(Web3.givenProvider || "http://localhost:8501");
 
-  if (typeof window.web3 !== 'undefined' && typeof window.web3.currentProvider !== 'undefined') {
-    eth.setProvider(window.web3.currentProvider);
-  } else {
-    eth.setProvider(provider);
-  }
-
-  if(eth !== 'undefined'){
-  // Now you can start your app & access web3 freely:
-    startApp()
+  if(web3js !== 'undefined'){
+    contract = new web3js.eth.Contract(abi, address) // Obtain contract with specified abi and address
+    startApp() // Then after obtaining, startApp
+    // Now you can start your app & access web3 freely:
   }else{
     notConnected()
   }
 })
 
 // If web3 injection cannot be confirmed
+// Implement timer to retry connecting and startApp()-ing
 function notConnected(){
   console.log("Not connected")
 }
 
 // Starts app after web3 injection has been confirmed
 function startApp(){
-  checkNetwork();
-  populateGames();
-  console.log("App started")
+  checkNetwork()
 }
 
 // Checks the MetaMask network to ensure user is on the mainnet 
 function checkNetwork(){
-  web3.version.getNetwork((err, netId) => {
+  web3js.eth.net.getId((err, netId) => {
     switch (netId) {
-      case "1":
+      case 1:
         // In mainnet
         console.log('This is mainnet')
         break
-      case "3":
+      case 3:
         // In Ropset test network
         console.log('This is the ropsten test network.')
         break
@@ -55,12 +274,29 @@ function checkNetwork(){
 
 // List the ongoing games that are on the block chain
 function populateGames(){
+  contract.getMatchIDsOfAddress("0x9CD16ef861Ee022A214E54d1ef9321dDA0ecD222")
+  // {
+  //   var idList = []
+  //   for(var i = 0; i < ret.length; i++){
+  //     idList[i] = ret[i].toNumber()
+  //   }
+  //   console.log(idList)
 
+  //   for(var i = 0; i < idList.length; i++){
+  //     contract.getMatch(idList[i], function(err, ret){
+  //       console.log("Match info = " + ret)
+  //       console.log(ret[0]);  // creator
+  //       console.log(ret[1]);  // opponent
+  //       console.log(ret[2].toNumber());  // wager
+  //       console.log(ret[3].toNumber());  // outcome
+  //     })
+  //   }
+  // })
 }
 
 // Fired when rock/paper/scissor is played (ie, 'Rock, Paper, Scissor... Shoot!')
 function shoot(btn){
-  eth.accounts(function(accountsError, accounts)
+  web3js.accounts(function(accountsError, accounts)
   {
     // Obtain player's account from ethjs
     if(accountsError){
@@ -91,29 +327,57 @@ function shoot(btn){
 }
 
 function createMatch(){
-  eth.accounts(function(accountsError, accounts)
+  var acc
+  web3js.eth.getAccounts(function(accountsError, accounts)
   {
     // Obtain player's account from ethjs
     if(accountsError){
-      return
+      throw new Error(accountsError)
+    }else if(!canCreateMatch){
+      throw new Error("Can only have one match at a time")
     }
     acc = accounts[0]
-    ethAmount = $("#ethAmount").val()
+    ethAmount = $("#ethAmount").val() // In Eth, need to be converted to Wei
   })
-  .then(createBlock(acc, ethAmount)) // Create rps match on the blockchain
-  .then(createListing(acc, ethAmount)) // Create a listing of the rps match on the website
+  .then(function (){  // Create rps match on the blockchain
+    if(ethAmount !== 'undefined' && ethAmount > 0){
+      var matchTxOps = {
+        from: acc,
+        value: web3js.utils.toWei(ethAmount, 'ether')  // Solidity Contract is payable with Wei, not ether
+      }
+
+      contract.methods.createMatch().send(matchTxOps) // Send createMatch() w/ specified options
+      .on('transactionHash', function(hash){  // When blockchain revieves function request
+        canCreateMatch = false  // Player is in the process of creating match. Cannot create another
+        console.log(hash)
+      })
+      .on('receipt', function(receipt){  // When blockchain has finished function execution
+        console.log(receipt)
+        console.log(receipt.from)
+        console.log(receipt.returnValues)
+      })
+      .on('error', function(rec){
+        canCreateMatch = true // If transaction errors out, player can create a match again
+        console.log("Errored out")
+        if(rec){
+          console.log(rec)
+          // ran out of gas
+        }else{
+          console.log("else")
+          console.log(rec)
+          // some other error
+        }
+      })
+    }else{
+      throw new Error("Invalid Etherium Amount")
+    }
+  }) 
   .catch(function(err)
   {
     console.error(err)
   })
 }
 
-function createBlock(acc, ethAmount){
-  if(ethAmount !== 'undefined' && ethAmount > 0){
-  }else{
-    throw new Error("Invalid Etherium Amount")
-  }
-}
 
 // Creates the html object for a specific match
 function createListing(acc, ethAmount){

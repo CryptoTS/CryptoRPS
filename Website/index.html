@@ -9,7 +9,6 @@
     <title>Our RPS Site</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="assets/css/main.css">
-    <!-- <script src="assets/web3.html"></script> -->
     <link href="assets/css/css.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="assets/bagImages/favicon.ico" sizes="32x32">
     <link rel="icon" type="image/png" href="assets/bagImages/favicon.ico" sizes="16x16">
@@ -56,7 +55,7 @@
         <div>
             <div align="right">
                 <div>
-                    <input id="ethAmount" type="number">
+                    <input id="ethAmount" type="number" step="0.25" value="0">
                     <button onclick="createMatch()">Create RPS Match</button>
                 </div>
             </div>
@@ -87,7 +86,7 @@
             <center> Made by some college kids </center>
             <p></p>
         </footer>
-        <script src="assets/js/ethjs.js"></script>
+        <script src="assets/js/web3.min.js"></script>
         <script src="assets/js/jquery-3.js"></script>
         <script src="assets/js/RPS.js"></script>
     </div>
