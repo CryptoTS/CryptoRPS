@@ -30,7 +30,8 @@ contract RPS{
 
 
 	/** STORAGE **/
-	RPSMatch[] private _matches;	// An array of all RPS matches, ongoing and completed
+	RPSMatch[] public _matches;	// An array of all RPS matches, ongoing and completed
+	//*** TODO change to private upon deployment
 
 	// @dev A mapping of player addresses to the number of matches that player has either created or been an opponent in. Note, a created match that hasn't been played out IS counted 
 	mapping(address => uint32) public playerToNumMatches; // Note on uint32: A player playing over 4 billion games is highly unlikely
@@ -68,6 +69,12 @@ contract RPS{
 		contractAdmin = msg.sender;
 		_isContractActive = true;	// Initiallize the contract to be active
 									// Maybe we shouldn't do this...? But instead manually?
+		_matches.push(RPSMatch({	// Pre-populate _matches first match with an empty match
+			creator: address(0),
+			opponent: address(0),
+			wager: 0 ether,
+			outcome: -2
+			}));
 	}
 
 
@@ -95,13 +102,14 @@ contract RPS{
 		uint256[] memory _ids = new uint256[](_numMatches);
 		uint32 _pos = 0;	//uint32 to match _numMatches type
 
-		// Loops until the end of _matches OR until we have all the activeMatches
-		for(uint i = 0; i < _matches.length && _ids.length != activeMatchCounter; i++){
+		// Loops until the end of _matches OR until we have all the activeMatches; _matches[0] is null match
+		for(uint256 i = 1; i < _matches.length && _pos != activeMatchCounter; i++){
 		    if(_matches[i].creator == _player || _matches[i].opponent == _player){
 				_ids[_pos] = i;
 				_pos = _pos.add(1);
 			}
 		}
+
 
 		return _ids;
 	}
@@ -112,8 +120,8 @@ contract RPS{
 		uint256[] memory _ids = new uint256[](activeMatchCounter);
 		uint32 _pos = 0;	//uint32 to match activeMatchCounter type
 
-		// Loops until the end of _matches OR until we have all the activeMatches
-		for(uint i = 0; i < _matches.length && _ids.length != activeMatchCounter; i++){
+		// Loops until the end of _matches OR until we have all the activeMatches; _matches[0] is null match
+		for(uint i = 1; i < _matches.length && _pos != activeMatchCounter; i++){
 			if(_matches[i].creator != address(0) && _matches[i].outcome == 0){	// Ensure valid match and is active
 				_ids[_pos] = i;
 				_pos = _pos.add(1);
@@ -134,7 +142,8 @@ contract RPS{
 	function getNumActiveMatchesFor(address _player) public view activeContract() returns(uint32 activeMatches){
 		uint32 counter = 0;
 
-		for(uint i = 0; i < _matches.length; i++){	// Go through all matches
+		// _matches[0] is null match
+		for(uint i = 1; i < _matches.length; i++){	// Go through all matches
 			if(_matches[i].outcome == 0 && _matches[i].creator != address(0) &&	// If the match is ongoing and not invalid
 				(_matches[i].creator == _player || _matches[i].opponent == _player)){	// And either the creator or opponent is the _player
 				counter = counter.add(1);	// Then the _player is in an active match
