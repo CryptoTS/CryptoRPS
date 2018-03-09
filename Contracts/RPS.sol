@@ -89,6 +89,7 @@ contract RPS{
 	}
 
 	// @notice Gets all match IDs associated to a specific player (ie. address)
+	// @dev I do a safety != address(0) check just in case
 	function getMatchIDsOfAddress(address _player) external view activeContract() returns(uint256[] matchIds){
 		uint32 _numMatches = playerToNumMatches[_player];	// Number of matches associated to this player
 		uint256[] memory _ids = new uint256[](_numMatches);
@@ -106,13 +107,14 @@ contract RPS{
 	}
 
 	// @notice Gets all active match IDs (with outcome code == 0)
+	// @dev I do a safety != address(0) check just in case
 	function getActiveMatchIDs() external view activeContract() returns(uint256[] matchIds){
 		uint256[] memory _ids = new uint256[](numActiveMatches);
 		uint32 _pos = 0;	//uint32 to match numActiveMatches type
 
 		// Loops until the end of _matches OR until we have all the activeMatches
 		for(uint i = 0; i < _matches.length && _ids.length != numActiveMatches; i++){
-			if(_matches[i].outcome == 0){
+			if(_matches[i].creator != address(0) && _matches[i].outcome == 0){	// Ensure valid match and is active
 				_ids[_pos] = i;
 				_pos = _pos.add(1);
 			}
@@ -128,11 +130,12 @@ contract RPS{
 	}
 
 	// @notice Get the number of ongoing RPS Matches by the specified address. This means they are either waiting for an opponent, or playing one currently
+	// @dev I do a safety != address(0) check just in case
 	function getNumActiveMatches(address _player) public view activeContract() returns(uint32 activeMatches){
 		uint32 counter = 0;
 
 		for(uint i = 0; i < _matches.length; i++){	// Go through all matches
-			if(_matches[i].outcome == 0 &&	// If the match is ongoing
+			if(_matches[i].outcome == 0 && _matches[i].creator != address(0) &&	// If the match is ongoing and not invalid
 				(_matches[i].creator == _player || _matches[i].opponent == _player)){	// And either the creator or opponent is the _player
 				counter = counter.add(1);	// Then the _player is in an active match
 			}
@@ -170,9 +173,9 @@ contract RPS{
 	function killMatch(uint256 _matchId) external isAdmin(){
 		RPSMatch memory _match = _matches[_matchId];
 		if(_match.creator == address(0) || _match.outcome != 0){	// Check if the match is a valid, ongoing match
-			emit MatchKilled(_matchId, address(0), 0, 0, address(0));	// Invalid/complete match, so don't return any funds
+			emit MatchKilled(_matchId, address(0), 0, address(0), 0);	// Invalid/complete match, so don't return any funds
 		}else{
-			address memory oppAddress = address(0);
+			address oppAddress = address(0);
 			uint256 oppRefund = 0;
 
 			_matches[_matchId].outcome = -2;	// To avoid re-entrancy vulnerability, set outcome of match to killed before transfer
@@ -184,6 +187,7 @@ contract RPS{
 				_match.opponent.transfer(_match.wager);	// Transfer their wager funds back to them as well
 			}
 
+			numActiveMatches = numActiveMatches.sub(1);
 			emit MatchKilled(_matchId, _match.creator, _match.wager, oppAddress, oppRefund);
 		}
 	}
