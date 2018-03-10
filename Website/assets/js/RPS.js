@@ -9,14 +9,14 @@ const abi = [
     "constant": true,
     "inputs": [
       {
-        "name": "",
+        "name": "_player",
         "type": "address"
       }
     ],
-    "name": "playerToNumMatches",
+    "name": "getNumActiveMatchesFor",
     "outputs": [
       {
-        "name": "",
+        "name": "activeMatches",
         "type": "uint32"
       }
     ],
@@ -27,49 +27,11 @@ const abi = [
   {
     "constant": true,
     "inputs": [],
-    "name": "getNumActiveMatchesFor",
+    "name": "activeMatchCounter",
     "outputs": [
       {
-        "name": "activeMatches",
+        "name": "",
         "type": "uint32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "_player",
-        "type": "address"
-      }
-    ],
-    "name": "getNumActiveMatchesFor",
-    "outputs": [
-      {
-        "name": "activeMatches",
-        "type": "uint32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "_player",
-        "type": "address"
-      }
-    ],
-    "name": "getMatchIDsOfAddress",
-    "outputs": [
-      {
-        "name": "matchIds",
-        "type": "uint256[]"
       }
     ],
     "payable": false,
@@ -86,6 +48,10 @@ const abi = [
     ],
     "name": "getMatch",
     "outputs": [
+      {
+        "name": "id",
+        "type": "uint256"
+      },
       {
         "name": "creator",
         "type": "address"
@@ -122,17 +88,45 @@ const abi = [
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "contractOwner",
-    "outputs": [
+    "constant": false,
+    "inputs": [
       {
-        "name": "",
+        "name": "_to",
         "type": "address"
       }
     ],
+    "name": "transferOwner",
+    "outputs": [],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_matchId",
+        "type": "uint256"
+      }
+    ],
+    "name": "killMatch",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_to",
+        "type": "address"
+      }
+    ],
+    "name": "transferAdmin",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -143,20 +137,6 @@ const abi = [
       {
         "name": "",
         "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "activeMatchCounter",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint32"
       }
     ],
     "payable": false,
@@ -193,6 +173,101 @@ const abi = [
     "payable": false,
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_isActive",
+        "type": "bool"
+      }
+    ],
+    "name": "setContractActive",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "createMatch",
+    "outputs": [],
+    "payable": true,
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "playerToNumMatches",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getNumActiveMatchesFor",
+    "outputs": [
+      {
+        "name": "activeMatches",
+        "type": "uint32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "contractOwner",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_player",
+        "type": "address"
+      }
+    ],
+    "name": "getMatchIDsOfAddress",
+    "outputs": [
+      {
+        "name": "matchIds",
+        "type": "uint256[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
   },
   {
     "anonymous": false,
@@ -257,79 +332,8 @@ const abi = [
     ],
     "name": "MatchKilled",
     "type": "event"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "createMatch",
-    "outputs": [],
-    "payable": true,
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_matchId",
-        "type": "uint256"
-      }
-    ],
-    "name": "killMatch",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_isActive",
-        "type": "bool"
-      }
-    ],
-    "name": "setContractActive",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_to",
-        "type": "address"
-      }
-    ],
-    "name": "transferAdmin",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_to",
-        "type": "address"
-      }
-    ],
-    "name": "transferOwner",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "constructor"
   }];
-const address = "0x5de42A4b681ba4dbEbCab282D80A4d9eD43FA958";
+const address = "0xEBda2aE4706372Aa272182BA0F56fB7C49598c4E";
 var contract;
 var activeMatches = []  // Array to store all active matches
 var canCreateMatch = true; // The player can only have one match up at a time
@@ -385,12 +389,12 @@ function notConnected(){
 // Starts app after web3 injection has been confirmed
 function startApp(){
   checkNetworkProm = new Promise(checkNetwork)
-  activeGamesSortedProm = new Promise(getActiveGamesSorted)
+  activeMatchesSortedProm = new Promise(getActiveMatchesSorted)
   bindEventsProm = new Promise(bindEvents)
 
   checkNetworkProm  // First check Network
   .then(function(networkId){
-    activeGamesSortedProm // Then get active games from contract and display them
+    activeMatchesSortedProm // Then get active matches from contract and display them
     .then(function(activeMatchesSorted){
       for(let i = 0; i < activeMatchesSorted.length; i++){
         appendListing(activeMatchesSorted[i])
@@ -424,8 +428,8 @@ function checkNetwork(resolve, reject){
   })
 }
 
-// List the ongoing games that are on the block chain
-function getActiveGamesSorted(resolve, reject){
+// List the ongoing matches that are on the block chain
+function getActiveMatchesSorted(resolve, reject){
   let activeMatchProms = [] // Array to store all active match requests (ie promises)
   
   contract.methods.getActiveMatchIDs().call() // Get all active match IDs from contract
@@ -468,7 +472,7 @@ function shoot(btn){
   })
   .then(function()
   {
-    // Make sure the person joining this game is NOT person who owns this game
+    // Make sure the person joining this match is NOT person who owns this match
     if(player == opponent){
       throw new Error("Cannot play against yourself!")
     }
@@ -527,9 +531,10 @@ function createMatch(){
   })
 }
 
-// Appends the html object for a specific match to end of the game list by default, but can specifiy div
-function appendListing(match, divToAppendTo = $('#gameList')){
+// Appends the html object for a specific match to end of the match list by default, but can specifiy div
+function appendListing(match, divToAppendTo = $('#matchList')){
   // Get listing data from match
+  let id = match.id
   let creator = match.creator
   let opponent = (creator == match.opponent) ? "No Opponent" : match.opponent  // If creator is the opponent, then they're looking for an opponent
   let wager = web3js.utils.fromWei(web3js.utils.toBN(match.wager), "ether")  // Convert Wei amount to Ether amount. Easier to understand for user
@@ -543,6 +548,8 @@ function appendListing(match, divToAppendTo = $('#gameList')){
   txtDiv.id = 'txtDiv'
   txtDiv.innerHTML =
     `
+      <span>id: </span>
+      <span id="matchId">${id}</span>
       <span>Challenger: </span>
       <span id="chalAcc">${creator}</span>
       <span>---</span>
@@ -572,18 +579,18 @@ function appendListing(match, divToAppendTo = $('#gameList')){
   divToAppendTo.append(newMatch);
 }
 
-// Inserts the html object for a specific match to the ordered location in the game list
-// Game list is ordered by etherium amount, descending
+// Inserts the html object for a specific match to the ordered location in the match list
+// Match list is ordered by etherium amount, descending
 function insertListing(match){
-  let prevDiv = $('#gameList').children('div')[0] // Default to TopMatch. Use: if the current top RPSMatch is smaller than this match, append below TopMatch
+  let prevDiv = $('#matchList').children('div')[0] // Default to TopMatch. Use: if the current top RPSMatch is smaller than this match, append below TopMatch
   let matchWager = web3js.utils.toBN(match.wager) // Convert insert match wager's to a BN
 
-  if($('#gameList').children('div').length == 1){ // If there's JUST TopMatch, then insert this game and end insertion
+  if($('#matchList').children('div').length == 1){ // If there's JUST TopMatch, then insert this match and end insertion
     appendListing(match, prevDiv)
     return
   }
 
-  $('#gameList').children('div') // Get all children divs of the gameList
+  $('#matchList').children('div') // Get all children divs of the matchList
   .each(function(){
     if($(this).attr('id') == 'topMatch'){
       return true // TopMatch is just a place holder, so skip over it
@@ -612,6 +619,7 @@ function bindEvents(resolve, reject){
     console.log("MatchCreated event fired!")
     data = event.returnValues
     matchData = ({  // Recreate the match data given the return values
+      id: data.id,
       creator: data.creator,
       opponent: data.opponent,
       wager: data.wager,
