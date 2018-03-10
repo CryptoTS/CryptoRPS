@@ -9,6 +9,39 @@ const abi = [
     "constant": true,
     "inputs": [
       {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "playerToNumMatches",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getNumActiveMatchesFor",
+    "outputs": [
+      {
+        "name": "activeMatches",
+        "type": "uint32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
         "name": "_player",
         "type": "address"
       }
@@ -26,12 +59,17 @@ const abi = [
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "activeMatchCounter",
+    "inputs": [
+      {
+        "name": "_player",
+        "type": "address"
+      }
+    ],
+    "name": "getMatchIDsOfAddress",
     "outputs": [
       {
-        "name": "",
-        "type": "uint32"
+        "name": "matchIds",
+        "type": "uint256[]"
       }
     ],
     "payable": false,
@@ -84,45 +122,17 @@ const abi = [
     "type": "function"
   },
   {
-    "constant": false,
-    "inputs": [
+    "constant": true,
+    "inputs": [],
+    "name": "contractOwner",
+    "outputs": [
       {
-        "name": "_to",
+        "name": "",
         "type": "address"
       }
     ],
-    "name": "transferOwner",
-    "outputs": [],
     "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_matchId",
-        "type": "uint256"
-      }
-    ],
-    "name": "killMatch",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_to",
-        "type": "address"
-      }
-    ],
-    "name": "transferAdmin",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -133,6 +143,20 @@ const abi = [
       {
         "name": "",
         "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "activeMatchCounter",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint32"
       }
     ],
     "payable": false,
@@ -169,101 +193,6 @@ const abi = [
     "payable": false,
     "stateMutability": "view",
     "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_isActive",
-        "type": "bool"
-      }
-    ],
-    "name": "setContractActive",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "createMatch",
-    "outputs": [],
-    "payable": true,
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "playerToNumMatches",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "getNumActiveMatchesFor",
-    "outputs": [
-      {
-        "name": "activeMatches",
-        "type": "uint32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "contractOwner",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "_player",
-        "type": "address"
-      }
-    ],
-    "name": "getMatchIDsOfAddress",
-    "outputs": [
-      {
-        "name": "matchIds",
-        "type": "uint256[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "constructor"
   },
   {
     "anonymous": false,
@@ -328,7 +257,78 @@ const abi = [
     ],
     "name": "MatchKilled",
     "type": "event"
-  } ];
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "createMatch",
+    "outputs": [],
+    "payable": true,
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_matchId",
+        "type": "uint256"
+      }
+    ],
+    "name": "killMatch",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_isActive",
+        "type": "bool"
+      }
+    ],
+    "name": "setContractActive",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_to",
+        "type": "address"
+      }
+    ],
+    "name": "transferAdmin",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_to",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwner",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  }];
 const address = "0x5de42A4b681ba4dbEbCab282D80A4d9eD43FA958";
 var contract;
 var activeMatches = []  // Array to store all active matches
@@ -505,15 +505,18 @@ function createMatch(){
       .on('transactionHash', function(hash){  // When blockchain revieves function request
         canCreateMatch = false  // Player is in the process of creating match. Cannot create another
         console.log("Starting transaction...")
+
+        _pollTxn(hash)  // Poll transaction hash for it's receipt until one is obtained
+        .then(function(result){
+          // console.log(result.receipt)
+
+          if(!result.didSucceed){ // If the receipt failed, allow player to create another match
+            canCreateMatch = true
+          }
+        })
       })
-      .on('receipt', function(receipt){  // When blockchain has finished function execution
-        console.log("receipt: ")
-        console.log(receipt)
-      })
-      .on('error', function(receipt){
-        canCreateMatch = true // If transaction errors out, player can create a match again
-        console.log("Errored out")
-        throw new Error(receipt)
+      .on('error', function(error){
+        console.log("createMatch took too long...")
       })
     }else{
       throw new Error("Invalid Etherium Amount")
@@ -610,10 +613,10 @@ function bindEvents(resolve, reject){
     console.log("MatchCreated event fired!")
     data = event.returnValues
     matchData = ({  // Recreate the match data given the return values
-      'creator': data.creator,
-      'opponent': data.opponent,
-      'wager': data.wager,
-      'outcome': data.outcome
+      creator: data.creator,
+      opponent: data.opponent,
+      wager: data.wager,
+      outcome: data.outcome
     })
     console.log("Instering matchData: ")
     console.log(matchData)
@@ -642,5 +645,29 @@ function _compareByEthDesc(matchA, matchB){
 // Defaults ordering in ascending order (lowest to highest)
 function _compareByEthAsc(matchA, matchB){
   return web3js.utils.toBN(matchA.wager).cmp(web3js.utils.toBN(matchB.wager));
+}
+
+// Polls specific txnHash until it either dies or is completed
+// ***NOTE: This should be moved to back-end server, as refreshing the page will kill this functionality
+function _pollTxn(txnHash){
+  return new Promise(function(resolve){ // This should resolve itself once the transaction succeeds/fails
+    const pollTxnInterval = setInterval(function(){ // Check for transcation receipt every 750 ms
+      web3js.eth.getTransactionReceipt(txnHash) // Get transaction receipt with web3js
+      .then(function(txnObj){
+
+        if(txnObj != null){ // If the receipt is null, then it is still being mined (ie. pending)
+          clearInterval(pollTxnInterval)  // Once it's finished being mined, stop interval-ing
+          
+          let result = ({ // Create result
+            didSucceed: txnObj.status == 1, // If txn receipt succeeded
+            receipt: txnObj // The receipt itself, for good measure
+          })
+
+          resolve(result) // Resolve the promise with the formulated result
+        }
+
+      })
+    }, 750) // Set interval for every 750 ms
+  })
 }
 
