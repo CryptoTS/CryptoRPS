@@ -328,7 +328,7 @@ const abi = [
     ],
     "name": "MatchKilled",
     "type": "event"
-  }];
+  } ];
 const address = "0x5de42A4b681ba4dbEbCab282D80A4d9eD43FA958";
 var contract;
 var activeMatches = []  // Array to store all active matches
@@ -362,6 +362,7 @@ window.addEventListener('load', function() {
         .then(function(accounts){
           if(curAcc != accounts[0])
           {
+            curAcc = accounts[0]
             location.reload() // Set a Periodical check to see if the account has changed and refresh the page if it has
           }
         })
@@ -600,9 +601,13 @@ function insertListing(match){
 
 /** Event listeners **/
 
+// Events do not fire from js, even though they fire from solidity... Needs to be fixed eventually
 function bindEvents(resolve, reject){
+  console.log("Binding Events...")
+  
   contract.events.MatchCreated()  // When MatchCreated event is fired
   .on('data', function(event){ // On what it returns to me
+    console.log("MatchCreated event fired!")
     data = event.returnValues
     matchData = ({  // Recreate the match data given the return values
       'creator': data.creator,
@@ -610,9 +615,19 @@ function bindEvents(resolve, reject){
       'wager': data.wager,
       'outcome': data.outcome
     })
+    console.log("Instering matchData: ")
+    console.log(matchData)
     insertListing(matchData)
   })
+  .on('changed', function(event){
+    console.log("MatchCreated changed")
+    console.log(event)
+  })
+  .on('error', function(error){
+    console.error(error)
+  })
 
+  console.log("Events Bound")
   resolve(true)
 }
 
