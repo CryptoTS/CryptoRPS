@@ -390,7 +390,6 @@ function startApp(){
 
   checkNetworkProm  // First check Network
   .then(function(networkId){
-    console.log("networkId " + networkId)
     activeGamesSortedProm // Then get active games from contract and display them
     .then(function(activeMatchesSorted){
       for(let i = 0; i < activeMatchesSorted.length; i++){
@@ -504,7 +503,7 @@ function createMatch(){
       contract.methods.createMatch().send(createMatchOps) // Send createMatch() w/ specified options
       .on('transactionHash', function(hash){  // When blockchain revieves function request
         canCreateMatch = false  // Player is in the process of creating match. Cannot create another
-        console.log("Starting transaction...")
+        // console.log("Starting transaction...")
 
         _pollTxn(hash)  // Poll transaction hash for it's receipt until one is obtained
         .then(function(result){
