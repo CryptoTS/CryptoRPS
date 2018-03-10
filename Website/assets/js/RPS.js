@@ -280,8 +280,18 @@ const abi = [
       },
       {
         "indexed": false,
+        "name": "opponent",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "name": "wager",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "outcome",
+        "type": "uint8"
       }
     ],
     "name": "MatchCreated",
@@ -319,7 +329,7 @@ const abi = [
     "name": "MatchKilled",
     "type": "event"
   }];
-const address = "0xd7113Be484Ff03DC6143de9FEa0a533d69cA99a2";
+const address = "0x5de42A4b681ba4dbEbCab282D80A4d9eD43FA958";
 var contract;
 var activeMatches = []  // Array to store all active matches
 var canCreateMatch = true; // The player can only have one match up at a time
@@ -375,14 +385,17 @@ function notConnected(){
 function startApp(){
   checkNetworkProm = new Promise(checkNetwork)
   activeGamesSortedProm = new Promise(getActiveGamesSorted)
-  checkNetworkProm
+  bindEventsProm = new Promise(bindEvents)
+
+  checkNetworkProm  // First check Network
   .then(function(networkId){
     console.log("networkId " + networkId)
-    activeGamesSortedProm
+    activeGamesSortedProm // Then get active games from contract and display them
     .then(function(activeMatchesSorted){
       for(let i = 0; i < activeMatchesSorted.length; i++){
         appendListing(activeMatchesSorted[i])
       }
+      bindEventsProm  // Then bind contract events to functions
     })
   })
   .catch(function(err){
@@ -470,6 +483,7 @@ function shoot(btn){
   })
 }
 
+// Creates a match on the contract, if the user is allowed to
 function createMatch(){
   let acc
   let checkCreation = new Promise(function (resolve, reject){
@@ -510,15 +524,15 @@ function createMatch(){
   })
 }
 
-// Appends the html object for a specific match to the end of the game list
-function appendListing(match){
+// Appends the html object for a specific match to end of the game list by default, but can specifiy div
+function appendListing(match, divToAppendTo = $('#gameList')){
   // Get listing data from match
   let creator = match.creator
   let opponent = (creator == match.opponent) ? "No Opponent" : match.opponent  // If creator is the opponent, then they're looking for an opponent
   let wager = web3js.utils.fromWei(web3js.utils.toBN(match.wager), "ether")  // Convert Wei amount to Ether amount. Easier to understand for user
 
   // Create listing elements
-  let div = document.createElement('div');
+  let newMatch = document.createElement('div');
   let txtDiv = document.createElement('div'); // Text div
   let btnDiv = document.createElement('div'); // Button div
   let spcDiv = document.createElement('div'); // Spacer div
@@ -548,21 +562,58 @@ function appendListing(match){
     <br><br>
     `
 
-  div.id = creator
-  div.appendChild(txtDiv);
-  div.appendChild(btnDiv);
-  div.appendChild(spcDiv);
-  $('#gameList').append(div);
+  newMatch.id = creator
+  newMatch.appendChild(txtDiv);
+  newMatch.appendChild(btnDiv);
+  newMatch.appendChild(spcDiv);
+  divToAppendTo.append(newMatch);
 }
 
 // Inserts the html object for a specific match to the ordered location in the game list
 // Game list is ordered by etherium amount, descending
-function insertListing(acc, ethAmount){
-  let gameListChildren = document.getElementById('gameList').getElementByTagName('div') // Get all children divs of the gameList
-  for(let i = 0; i < gameListChildren.length; i++){
-    gameListChild = gameListChildren[i]
-    console.log(gameListChild.getElementById('txtDiv').getElementById('chalAmount'))
+function insertListing(match){
+  let prevDiv = $('#gameList').children('div')[0] // Default to TopMatch. Use: if the current top RPSMatch is smaller than this match, append below TopMatch
+  let matchWager = web3js.utils.toBN(match.wager) // Convert insert match wager's to a BN
+
+  if($('#gameList').children('div').length == 1){ // If there's JUST TopMatch, then insert this game and end insertion
+    appendListing(match, prevDiv)
+    return
   }
+
+  $('#gameList').children('div') // Get all children divs of the gameList
+  .each(function(){
+    if($(this).attr('id') == 'topMatch'){
+      return true // TopMatch is just a place holder, so skip over it
+    }
+    let curWeiWager = web3js.utils.toWei(String($(this).find('#txtDiv').find('#chalAmount').html()), "ether") // Convert displayed ether to BN Wei 
+    curWeiWager = web3js.utils.toBN(curWeiWager)  // Convert Wei value to a BN
+
+    if(matchWager.cmp(curWeiWager) < 0){
+      appendListing(match, prevDiv) // Append the listing to the previous div
+
+      return false // With insertion complete, break out of .each
+    }else{
+      prevDiv = $(this) // Set prevDiv to this Div, and continue on with loop
+    }
+  })
+}
+
+/** Event listeners **/
+
+function bindEvents(resolve, reject){
+  contract.events.MatchCreated()  // When MatchCreated event is fired
+  .on('data', function(event){ // On what it returns to me
+    data = event.returnValues
+    matchData = ({  // Recreate the match data given the return values
+      'creator': data.creator,
+      'opponent': data.opponent,
+      'wager': data.wager,
+      'outcome': data.outcome
+    })
+    insertListing(matchData)
+  })
+
+  resolve(true)
 }
 
 /** HELPER FUNCTIONS **/
