@@ -37,7 +37,7 @@ contract RPS{
 	mapping(address => uint32) public playerToNumMatches; // Note on uint32: A player playing over 4 billion games is highly unlikely
 
 	/** EVENTS **/
-	event MatchCreated(uint256 matchId, address creator, uint256 wager);
+	event MatchCreated(uint256 matchId, address creator, address opponent, uint256 wager, uint8 outcome);
 
     event MatchKilled(uint256 matchId, address creator, uint256 creatorRefund, address opponent, uint256 opponentRefuned);
 
@@ -92,7 +92,7 @@ contract RPS{
 		activeMatchCounter = activeMatchCounter.add(1);	// Increment the number of active RPS matches
 		playerToNumMatches[_match.creator] = playerToNumMatches[_match.creator].add(1);	// Increment number of matches by this player
 
-		emit MatchCreated(_matchId, _match.creator, _match.wager);	// Trigger the MatchCreated event
+		emit MatchCreated(_matchId, _match.creator, address(0), _match.wager, 0);	// Emit the MatchCreated event. address(0) is psuedo opponent, 0 is outcome
 	}
 
 	// @notice Gets all match IDs associated to a specific player (ie. address)
