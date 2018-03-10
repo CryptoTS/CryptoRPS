@@ -153,11 +153,12 @@ contract RPS{
 		return counter;
 	}
 
-	// @notice Gets a specified match's creator address, opponent address, wager amount, and outcome code. Outcome Code : -1 == creator won; 0 == match not finished; 1 == opponent won
+	// @notice Gets a specified match's id, creator address, opponent address, wager amount, and outcome code. Outcome Code : -1 == creator won; 0 == match not finished; 1 == opponent won
 	// @param _matchId The match ID to get data from
-	function getMatch(uint256 _matchId) public view activeContract() returns(address creator, address opponent, uint256 wager, int8 outcome){
+	// @dev matchId is re-returned for easier handling on js side
+	function getMatch(uint256 _matchId) public view activeContract() returns(uint256 id, address creator, address opponent, uint256 wager, int8 outcome){
 		RPSMatch memory _match = _matches[_matchId];
-		return (_match.creator, _match.opponent, _match.wager, _match.outcome);
+		return (_matchId, _match.creator, _match.opponent, _match.wager, _match.outcome);
 	}
 
 	// @notice Transfers ownership of this contract to another address. Callable only by owner.
