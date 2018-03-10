@@ -1,2 +1,2 @@
-1) When creating match, if the transaction does not occur within 50 blocks web3js will error out. When this happens, the transaction is not necesasrily killed, but there's no way to differentiate between a killed transaction and an error-ed out, slow transaction. When this error-ing out occurs, players can create another match. This is a BUG
+1) _pollTxns fixed part of a BUG. To fully fix bug, _pollTxn will need to be put on back-end. This is a BUG
 2) JS Events not firing when solidity contract events fire. I think this might be a web3js bug... 
