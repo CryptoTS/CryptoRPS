@@ -1,9 +1,9 @@
-var web3js 
 var moveMap = new Map();
     moveMap.set('rock', 0);
     moveMap.set('paper', 1);
     moveMap.set('scissor', 2);
 
+var web3js 
 const abi = [
   {
     "constant": true,
@@ -337,7 +337,7 @@ const address = "0xEBda2aE4706372Aa272182BA0F56fB7C49598c4E";
 var contract;
 var activeMatches = []  // Array to store all active matches
 var canCreateMatch = true; // The player can only have one match up at a time
-let curAcc // current account
+var curAcc // current account
 
 window.addEventListener('load', function() {
   web3js = new Web3(Web3.givenProvider || "http://localhost:8501");
@@ -352,11 +352,7 @@ window.addEventListener('load', function() {
         from: curAcc
       }
 
-      // Set canCreateMatch based on contract data
-      contract.methods.getNumActiveMatchesFor().call(activeMatchesOps)  // Call hasActiveMatch() w/ specified options
-      .then(function (numActiveMatches){
-        canCreateMatch = !(numActiveMatches > 0)  // If this player has more than 0 active matches, they cannot create matches
-      })
+      updateCanCreateMatch(activeMatchesOps)  // On load (typically page refresh), updateCanCreateMatch
     })
     .then(function(){ // After initial account is obtained
       startApp()
@@ -379,6 +375,34 @@ window.addEventListener('load', function() {
     notConnected()
   }
 })
+
+// Updates player's ability to create a match
+function updateCanCreateMatch(activeMatchesOps){
+  // Set canCreateMatch based on contract data
+  if(sessionStorage.getItem('txnHash') != null){  // If a txnHash was generated via the createMatch function
+    web3js.eth.getTransactionReceipt(sessionStorage.getItem('txnHash')) // Get the transaction Receipt for that transaction
+    .then(function(receipt){
+      if(receipt == null && sessionStorage.getItem('txnAcc') == curAcc){  // If receipt is null (aka not yet completed)
+                                                                          // AND the cur account matches the account that made the transaction
+        canCreateMatch = false  // This means that the transaction for this account is still being created, so restrict creation
+        _pollTxn(sessionStorage.getItem('txnHash')) // Keep polling the transaction until it's resolved
+          .then(function (result){
+            canCreateMatch = !result.didSucceed // If the transaction succeeded (went through) then you can not create a game
+          })
+        }else{  // Else, the transaction already exists (/a different account is being used)
+          contract.methods.getNumActiveMatchesFor().call(activeMatchesOps)  // Since the transaction is complete, the contract has been updated
+                                                                            // getNumActiveMatchesFor() this account to see num active matches for this account
+          .then(function (numActiveMatches){
+            canCreateMatch = !(numActiveMatches > 0)  // If this player has more than 0 active matches, they cannot create matches
+          })
+        }
+    })
+    .catch(function(error){
+      console.log("canCreateMatch Set error!")
+      console.log(error)
+    })
+  }
+}
 
 // If web3 injection cannot be confirmed
 // Implement timer to retry connecting and startApp()-ing
@@ -489,7 +513,6 @@ function shoot(btn){
 
 // Creates a match on the contract, if the user is allowed to
 function createMatch(){
-  let acc
   let checkCreation = new Promise(function (resolve, reject){
     if(!canCreateMatch){
       reject(Error("Can only have one match at a time"))
@@ -497,7 +520,8 @@ function createMatch(){
     resolve($("#ethAmount").val()) // In Eth, need to be converted to Wei
   })
 
-  checkCreation.then(function (ethAmount){  // Create rps match on the blockchain
+  checkCreation
+  .then(function (ethAmount){  // Create rps match on the blockchain
     if(ethAmount !== 'undefined' && ethAmount > 0){
       let createMatchOps = {
         from: curAcc,
@@ -508,6 +532,9 @@ function createMatch(){
       .on('transactionHash', function(hash){  // When blockchain revieves function request
         canCreateMatch = false  // Player is in the process of creating match. Cannot create another
         // console.log("Starting transaction...")
+
+        sessionStorage.setItem('txnHash', hash)
+        sessionStorage.setItem('txnAcc', curAcc)
 
         _pollTxn(hash)  // Poll transaction hash for it's receipt until one is obtained
         .then(function(result){
@@ -529,6 +556,11 @@ function createMatch(){
   {
     console.error(err)
   })
+}
+
+// Join a match
+function joinMatch(btn){
+
 }
 
 // Appends the html object for a specific match to end of the match list by default, but can specifiy div
@@ -564,6 +596,7 @@ function appendListing(match, divToAppendTo = $('#matchList')){
       <button id="rock" onclick="shoot(this)">Rock</button>
       <button id="paper" onclick="shoot(this)">Paper</button>
       <button id="scissor" onclick="shoot(this)">Scissor</button>
+      <button style="margin-left: 60px;" id="join" onclick="joinMatch(this)">Join</button>
     `
 
   spcDiv.id = 'spcDiv'
