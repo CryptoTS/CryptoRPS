@@ -39,6 +39,8 @@ contract RPS{
 	/** EVENTS **/
 	event MatchCreated(uint256 matchId, address creator, address opponent, uint256 wager, uint8 outcome);
 
+	event MatchJoined(uint256 matchId, address opponent);
+
     event MatchKilled(uint256 matchId, address creator, uint256 creatorRefund, address opponent, uint256 opponentRefuned);
 
 	/** MODIFIERS **/
@@ -93,6 +95,18 @@ contract RPS{
 		playerToNumMatches[_match.creator] = playerToNumMatches[_match.creator].add(1);	// Increment number of matches by this player
 
 		emit MatchCreated(_matchId, _match.creator, address(0), _match.wager, 0);	// Emit the MatchCreated event. address(0) is psuedo opponent, 0 is outcome
+	}
+
+	// @notice Joins an RPS match
+	function joinMatch(uint256 _matchId) external payable activeContract(){
+		require(msg.value == _matches[_matchId].wager);	// Require the sent in value to be equal to the match wager for specified _matchId
+		require(msg.sender != _matches[_matchId].creator);	// Require the sender to NOT be the creator (ie. you can't play against yourself)
+		require(_matches[_matchId].outcome == 0);	// As a sanity check, ensure the match is also ongoing
+
+		_matches[_matchId].opponent = msg.sender;	// Associate this sender as the opponent of specified match
+		playerToNumMatches[msg.sender] = playerToNumMatches[msg.sender].add(1);	// Increment number of matches this player has been in
+
+		emit MatchJoined(_matchId, msg.sender);
 	}
 
 	// @notice Gets all match IDs associated to a specific player (ie. address)
