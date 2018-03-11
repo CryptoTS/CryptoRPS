@@ -7,25 +7,6 @@ var web3js
 const abi = [
   {
     "constant": true,
-    "inputs": [
-      {
-        "name": "_player",
-        "type": "address"
-      }
-    ],
-    "name": "getNumActiveMatchesFor",
-    "outputs": [
-      {
-        "name": "activeMatches",
-        "type": "uint32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
     "inputs": [],
     "name": "activeMatchCounter",
     "outputs": [
@@ -67,6 +48,25 @@ const abi = [
       {
         "name": "outcome",
         "type": "int8"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_player",
+        "type": "address"
+      }
+    ],
+    "name": "getNumActiveCreatedMatchesFor",
+    "outputs": [
+      {
+        "name": "numMatches",
+        "type": "uint32"
       }
     ],
     "payable": false,
@@ -218,11 +218,44 @@ const abi = [
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "getNumActiveMatchesFor",
+    "inputs": [
+      {
+        "name": "_player",
+        "type": "address"
+      }
+    ],
+    "name": "getNumActiveJoinedMatchesFor",
     "outputs": [
       {
-        "name": "activeMatches",
+        "name": "numMatches",
+        "type": "uint32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getNumActiveJoinedMatches",
+    "outputs": [
+      {
+        "name": "numMatches",
+        "type": "uint32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getNumActiveCreatedMatches",
+    "outputs": [
+      {
+        "name": "numMatches",
         "type": "uint32"
       }
     ],
@@ -364,7 +397,7 @@ const abi = [
     "name": "MatchKilled",
     "type": "event"
   }];
-const address = "0xace296cE5197A3Fe6cCF63C41EB593f2E903A85f";
+const address = "0x41CeefDafF7e23e8A1B256AD61312Df859b62c97";
 var contract;
 var activeMatches = []  // Array to store all active matches
 var canCreateMatch = true; // The player can only have one match up at a time
@@ -422,10 +455,10 @@ function updateCanCreateMatch(activeMatchesOps){
             canCreateMatch = !result.didSucceed // If the transaction succeeded (went through) then you can not create a game
           })
         }else{  // Else, the transaction already exists (/a different account is being used)
-          contract.methods.getNumActiveMatchesFor().call(activeMatchesOps)  // Since the transaction is complete, the contract has been updated
-                                                                            // getNumActiveMatchesFor() this account to see num active matches for this account
-          .then(function (numActiveMatches){
-            canCreateMatch = !(numActiveMatches > 0)  // If this player has more than 0 active matches, they cannot create matches
+          contract.methods.getNumActiveCreatedMatches().call(activeMatchesOps)  // Since the transaction is complete, the contract has been updated
+                                                                                // getNumActiveCreatedMatches() this account to see num active created matches for this account
+          .then(function (numMatches){
+            canCreateMatch = !(numMatches > 0)  // If this player has more than 0 active created matches, they cannot create matches
           })
         }
     })
@@ -450,10 +483,10 @@ function updateCanJoinMatch(activeMatchesOps){
             canJoinMatch = !result.didSucceed // If the transaction succeeded (went through) then you can not join a game
           })
         }else{  // Else, the transaction already exists (/a different account is being used)
-          contract.methods.getNumActiveMatchesFor().call(activeMatchesOps)  // Since the transaction is complete, the contract has been updated
-                                                                            // getNumActiveMatchesFor() this account to see num active matches for this account
-          .then(function (numActiveMatches){
-            canJoinMatch = !(numActiveMatches > 0)  // If this player has more than 0 active matches, they cannot join matches
+          contract.methods.getNumActiveJoinedMatches().call(activeMatchesOps) // Since the transaction is complete, the contract has been updated
+                                                                              // getNumActiveJoinedMatches() this account to see num active joined matches for this account
+          .then(function (numMatches){
+            canJoinMatch = !(numMatches > 0)  // If this player has more than 0 active joined matches, they cannot join matches
           })
         }
     })

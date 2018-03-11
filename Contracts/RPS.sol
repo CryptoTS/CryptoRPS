@@ -102,6 +102,7 @@ contract RPS{
 		require(msg.value == _matches[_matchId].wager);	// Require the sent in value to be equal to the match wager for specified _matchId
 		require(msg.sender != _matches[_matchId].creator);	// Require the sender to NOT be the creator (ie. you can't play against yourself)
 		require(_matches[_matchId].outcome == 0);	// As a sanity check, ensure the match is also ongoing
+		require(_matches[_matchId].creator == _matches[_matchId].opponent);	// As a sanity check, ensure the match has not been joined
 
 		_matches[_matchId].opponent = msg.sender;	// Associate this sender as the opponent of specified match
 		playerToNumMatches[msg.sender] = playerToNumMatches[msg.sender].add(1);	// Increment number of matches this player has been in
@@ -145,21 +146,44 @@ contract RPS{
 		return _ids;
 	}
 
-	// @notice Gets the number of ongoing RPS Matches by the caller
+	// @notice Gets the number of ongoing RPS Matches created by the caller
 	// @dev Uses more general getNumActiveMatchesFor(address) function. This is mostly for laziness on js-side
-	function getNumActiveMatchesFor() external view activeContract() returns(uint32 activeMatches){
-		return getNumActiveMatchesFor(msg.sender);
+	function getNumActiveCreatedMatches() external view activeContract() returns(uint32 numMatches){
+		return getNumActiveCreatedMatchesFor(msg.sender);
 	}
 
-	// @notice Get the number of ongoing RPS Matches by the specified address. This means they are either waiting for an opponent, or playing one currently
+	// @notice Get the number of ongoing RPS Matches by the created specified address. Meaning they are waiting for an opponent
 	// @dev I do a safety != address(0) check just in case
-	function getNumActiveMatchesFor(address _player) public view activeContract() returns(uint32 activeMatches){
+	function getNumActiveCreatedMatchesFor(address _player) public view activeContract() returns(uint32 numMatches){
 		uint32 counter = 0;
 
 		// _matches[0] is null match
 		for(uint i = 1; i < _matches.length; i++){	// Go through all matches
 			if(_matches[i].outcome == 0 && _matches[i].creator != address(0) &&	// If the match is ongoing and not invalid
-				(_matches[i].creator == _player || _matches[i].opponent == _player)){	// And either the creator or opponent is the _player
+				_matches[i].creator == _player){	// And the creator is the _player
+				counter = counter.add(1);	// Then the _player is in an active match
+			}
+		}
+
+		return counter;
+	}
+
+	// @notice Gets the number of ongoing RPS Matches joined by the caller
+	// @dev Uses more general getNumActiveMatchesFor(address) function. This is mostly for laziness on js-side
+	function getNumActiveJoinedMatches() external view activeContract() returns(uint32 numMatches){
+		return getNumActiveJoinedMatchesFor(msg.sender);
+	}
+
+	// @notice Get the number of ongoing RPS Matches by the joined specified address. Meaning they are waiting for an opponent
+	// @dev I do a safety != address(0) check just in case
+	function getNumActiveJoinedMatchesFor(address _player) public view activeContract() returns(uint32 numMatches){
+		uint32 counter = 0;
+
+		// _matches[0] is null match
+		for(uint i = 1; i < _matches.length; i++){	// Go through all matches
+			if(_matches[i].outcome == 0 && _matches[i].creator != address(0)	// If the match is ongoing and not invalid
+				&& _matches[i].creator != _matches[i].opponent  // And creator isn't also the opponent (This occurs when a new match is created)
+				&& _matches[i].opponent == _player){	// And the opponent is the _player
 				counter = counter.add(1);	// Then the _player is in an active match
 			}
 		}
