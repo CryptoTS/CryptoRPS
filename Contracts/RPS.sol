@@ -27,7 +27,8 @@ contract RPS{
 	address public contractAdmin;	// A secondary contract administrator, if needed
 	bool private _isContractActive;	// Determines if the contract (and hence the RPS game/website) is active
 	uint32 public activeMatchCounter;	// A counter for the number of active RPS matches
-
+	uint8 public createCap;	// The max number of matches a single player can create at the same time
+	uint8 public joinCap;	// The max number of matches a single player can join at the same time
 
 	/** STORAGE **/
 	RPSMatch[] public _matches;	// An array of all RPS matches, ongoing and completed
@@ -35,6 +36,12 @@ contract RPS{
 
 	// @dev A mapping of player addresses to the number of matches that player has either created or been an opponent in. Note, a created match that hasn't been played out IS counted 
 	mapping(address => uint32) public playerToNumMatches; // Note on uint32: A player playing over 4 billion games is highly unlikely
+
+	// @dev A mapping of player addresses to the number of ongoing matches that a player has created
+	mapping(address => uint8) public playerToNumActiveCreates;	// Note on uint8: A player will NEVER been allowed to create 256+ concurrent, ongoing matches
+
+	// @dev A mapping of player addresses to the number of ongoing matches that a player has joined
+	mapping(address => uint8) public playerToNumActiveJoins;	// Note on uint8: A player will NEVER be allowed to join 256+ concorrent, ongoing matches
 
 	/** EVENTS **/
 	event MatchCreated(uint256 matchId, address creator, address opponent, uint256 wager, uint8 outcome);
@@ -69,6 +76,8 @@ contract RPS{
 	function RPS() public{
 		contractOwner = msg.sender;
 		contractAdmin = msg.sender;
+		createCap = 1;
+		joinCap = 1;
 		_isContractActive = true;	// Initiallize the contract to be active
 									// Maybe we shouldn't do this...? But instead manually?
 		_matches.push(RPSMatch({	// Pre-populate _matches first match with an empty match
@@ -83,6 +92,8 @@ contract RPS{
 	/** PUBLIC FUNCTIONS **/
 	// @notice Creates an RPS match
 	function createMatch() external payable activeContract(){
+		require(playerToNumActiveCreates[msg.sender] < createCap);	// In order to be able to create this match, the player's ongoing creates must be below createCap
+
 		RPSMatch memory _match = RPSMatch({	// Create a RPSMatch in memory
 			creator: msg.sender,
 			opponent: msg.sender,	// Initially set like this so worse-case scenario is creator sends money to themselves
@@ -93,6 +104,7 @@ contract RPS{
 
 		activeMatchCounter = activeMatchCounter.add(1);	// Increment the number of active RPS matches
 		playerToNumMatches[_match.creator] = playerToNumMatches[_match.creator].add(1);	// Increment number of matches by this player
+		playerToNumActiveCreates[_match.creator] = playerToNumActiveCreates[_match.creator].add(1);	// Increment number of active creates this player has
 
 		emit MatchCreated(_matchId, _match.creator, address(0), _match.wager, 0);	// Emit the MatchCreated event. address(0) is psuedo opponent, 0 is outcome
 	}
@@ -103,10 +115,12 @@ contract RPS{
 		require(msg.sender != _matches[_matchId].creator);	// Require the sender to NOT be the creator (ie. you can't play against yourself)
 		require(_matches[_matchId].outcome == 0);	// As a sanity check, ensure the match is also ongoing
 		require(_matches[_matchId].creator == _matches[_matchId].opponent);	// As a sanity check, ensure the match has not been joined
+		require(playerToNumActiveJoins[msg.sender] < joinCap);	// In order to be able to join this match, the player's ongoing joins must be below joinCap
 
-		_matches[_matchId].opponent = msg.sender;	// Associate this sender as the opponent of specified match
+		playerToNumActiveJoins[msg.sender] = playerToNumActiveJoins[msg.sender].add(1);	// Increment number of active joins this player has
 		playerToNumMatches[msg.sender] = playerToNumMatches[msg.sender].add(1);	// Increment number of matches this player has been in
-
+		_matches[_matchId].opponent = msg.sender;	// Associate this sender as the opponent of specified match
+		
 		emit MatchJoined(_matchId, msg.sender);
 	}
 
@@ -147,48 +161,25 @@ contract RPS{
 	}
 
 	// @notice Gets the number of ongoing RPS Matches created by the caller
-	// @dev Uses more general getNumActiveMatchesFor(address) function. This is mostly for laziness on js-side
-	function getNumActiveCreatedMatches() external view activeContract() returns(uint32 numMatches){
-		return getNumActiveCreatedMatchesFor(msg.sender);
+	// @dev This is mostly for laziness on js-side
+	function getNumActiveCreatedMatches() external view activeContract() returns(uint8 numMatches){
+		return playerToNumActiveCreates[msg.sender];
 	}
 
-	// @notice Get the number of ongoing RPS Matches by the created specified address. Meaning they are waiting for an opponent
-	// @dev I do a safety != address(0) check just in case
-	function getNumActiveCreatedMatchesFor(address _player) public view activeContract() returns(uint32 numMatches){
-		uint32 counter = 0;
-
-		// _matches[0] is null match
-		for(uint i = 1; i < _matches.length; i++){	// Go through all matches
-			if(_matches[i].outcome == 0 && _matches[i].creator != address(0) &&	// If the match is ongoing and not invalid
-				_matches[i].creator == _player){	// And the creator is the _player
-				counter = counter.add(1);	// Then the _player is in an active match
-			}
-		}
-
-		return counter;
+	// @notice Get the number of ongoing RPS Matches by the created specified address (this includes players waiting for an opponent)
+	function getNumActiveCreatedMatchesFor(address _player) external view activeContract() returns(uint8 numMatches){
+		return playerToNumActiveCreates[_player];
 	}
 
 	// @notice Gets the number of ongoing RPS Matches joined by the caller
-	// @dev Uses more general getNumActiveMatchesFor(address) function. This is mostly for laziness on js-side
-	function getNumActiveJoinedMatches() external view activeContract() returns(uint32 numMatches){
-		return getNumActiveJoinedMatchesFor(msg.sender);
+	// @dev This is mostly for laziness on js-side
+	function getNumActiveJoinedMatches() external view activeContract() returns(uint8 numMatches){
+		return playerToNumActiveJoins[msg.sender];
 	}
 
-	// @notice Get the number of ongoing RPS Matches by the joined specified address. Meaning they are waiting for an opponent
-	// @dev I do a safety != address(0) check just in case
-	function getNumActiveJoinedMatchesFor(address _player) public view activeContract() returns(uint32 numMatches){
-		uint32 counter = 0;
-
-		// _matches[0] is null match
-		for(uint i = 1; i < _matches.length; i++){	// Go through all matches
-			if(_matches[i].outcome == 0 && _matches[i].creator != address(0)	// If the match is ongoing and not invalid
-				&& _matches[i].creator != _matches[i].opponent  // And creator isn't also the opponent (This occurs when a new match is created)
-				&& _matches[i].opponent == _player){	// And the opponent is the _player
-				counter = counter.add(1);	// Then the _player is in an active match
-			}
-		}
-
-		return counter;
+	// @notice Get the number of ongoing RPS Matches by the joined specified address
+	function getNumActiveJoinedMatchesFor(address _player) external view activeContract() returns(uint8 numMatches){
+		return playerToNumActiveJoins[_player];
 	}
 
 	// @notice Gets a specified match's id, creator address, opponent address, wager amount, and outcome code. Outcome Code : -1 == creator won; 0 == match not finished; 1 == opponent won
@@ -197,6 +188,43 @@ contract RPS{
 	function getMatch(uint256 _matchId) public view activeContract() returns(uint256 id, address creator, address opponent, uint256 wager, int8 outcome){
 		RPSMatch memory _match = _matches[_matchId];
 		return (_matchId, _match.creator, _match.opponent, _match.wager, _match.outcome);
+	}
+
+	/** Administrative Methods **/
+
+	// @notice Kills an *ongoing* match and returns wagers to appropriate addresses. Callable only by the admins or higher
+	function killMatch(uint256 _matchId) external isAdmin(){
+		RPSMatch memory _match = _matches[_matchId];
+		if(_match.creator == address(0) || _match.outcome != 0){	// Check if the match is a valid, ongoing match
+			emit MatchKilled(_matchId, address(0), 0, address(0), 0);	// Invalid/complete match, so don't return any funds
+		}else{
+			address oppAddress = address(0);
+			uint256 oppRefund = 0;
+
+			_matches[_matchId].outcome = -2;	// To avoid re-entrancy vulnerability, set outcome of match to killed before transfer
+			_match.creator.transfer(_match.wager);	// Transfer the wager funds back to creator
+			
+			if(_match.creator != _match.opponent){	// If an opponent has also put in money to this ongoing match
+				oppAddress = _match.opponent;
+				oppRefund = _match.wager;
+				playerToNumActiveJoins[oppAddress] = playerToNumActiveJoins[oppAddress].sub(1);	// Killing a match removes opponent from it
+				_match.opponent.transfer(_match.wager);	// Transfer their wager funds back to them as well
+			}
+
+			activeMatchCounter = activeMatchCounter.sub(1);
+			playerToNumActiveCreates[_match.creator] = playerToNumActiveCreates[_match.creator].sub(1);	// Killing a match removes creator from it
+			emit MatchKilled(_matchId, _match.creator, _match.wager, oppAddress, oppRefund);
+		}
+	}
+
+	// @notice Sets a new cap on the number of games a single player can create at the same time
+	function setCreateCap(uint8 newCap) external isAdmin(){
+		createCap = newCap;
+	}
+	
+	// @notice Sets a new cap on the number of games a single player can join at the same time
+	function setJoinCap(uint8 newCap) external isAdmin(){
+		joinCap = newCap;
 	}
 
 	// @notice Transfers ownership of this contract to another address. Callable only by owner.
@@ -217,29 +245,6 @@ contract RPS{
 		_isContractActive = _isActive;
 	}
 
-	// @notice Kills an *ongoing* match and returns wagers to appropriate addresses. Callable only by the admins or higher
-	function killMatch(uint256 _matchId) external isAdmin(){
-		RPSMatch memory _match = _matches[_matchId];
-		if(_match.creator == address(0) || _match.outcome != 0){	// Check if the match is a valid, ongoing match
-			emit MatchKilled(_matchId, address(0), 0, address(0), 0);	// Invalid/complete match, so don't return any funds
-		}else{
-			address oppAddress = address(0);
-			uint256 oppRefund = 0;
-
-			_matches[_matchId].outcome = -2;	// To avoid re-entrancy vulnerability, set outcome of match to killed before transfer
-			_match.creator.transfer(_match.wager);	// Transfer the wager funds back to creator
-			
-			if(_match.creator != _match.opponent){	// If an opponent has also put in money to this ongoing match
-				oppAddress = _match.opponent;
-				oppRefund = _match.wager;
-				_match.opponent.transfer(_match.wager);	// Transfer their wager funds back to them as well
-			}
-
-			activeMatchCounter = activeMatchCounter.sub(1);
-			emit MatchKilled(_matchId, _match.creator, _match.wager, oppAddress, oppRefund);
-		}
-	}
-	
 	/** PRIVATE METHODS **/
 	
 }
