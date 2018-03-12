@@ -1,444 +1,51 @@
-var moveMap = new Map();
+let moveMap = new Map();
     moveMap.set('rock', 0);
     moveMap.set('paper', 1);
     moveMap.set('scissor', 2);
 
-var web3js 
-const abi = [
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "activeMatchCounter",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "_matchId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getMatch",
-    "outputs": [
-      {
-        "name": "id",
-        "type": "uint256"
-      },
-      {
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "name": "opponent",
-        "type": "address"
-      },
-      {
-        "name": "wager",
-        "type": "uint256"
-      },
-      {
-        "name": "outcome",
-        "type": "int8"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "_player",
-        "type": "address"
-      }
-    ],
-    "name": "getNumActiveCreatedMatchesFor",
-    "outputs": [
-      {
-        "name": "numMatches",
-        "type": "uint32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "getActiveMatchIDs",
-    "outputs": [
-      {
-        "name": "matchIds",
-        "type": "uint256[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_to",
-        "type": "address"
-      }
-    ],
-    "name": "transferOwner",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_matchId",
-        "type": "uint256"
-      }
-    ],
-    "name": "killMatch",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_to",
-        "type": "address"
-      }
-    ],
-    "name": "transferAdmin",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "contractAdmin",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "_matches",
-    "outputs": [
-      {
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "name": "opponent",
-        "type": "address"
-      },
-      {
-        "name": "wager",
-        "type": "uint256"
-      },
-      {
-        "name": "outcome",
-        "type": "int8"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_isActive",
-        "type": "bool"
-      }
-    ],
-    "name": "setContractActive",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "createMatch",
-    "outputs": [],
-    "payable": true,
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "playerToNumMatches",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "_player",
-        "type": "address"
-      }
-    ],
-    "name": "getNumActiveJoinedMatchesFor",
-    "outputs": [
-      {
-        "name": "numMatches",
-        "type": "uint32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "getNumActiveJoinedMatches",
-    "outputs": [
-      {
-        "name": "numMatches",
-        "type": "uint32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "getNumActiveCreatedMatches",
-    "outputs": [
-      {
-        "name": "numMatches",
-        "type": "uint32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "contractOwner",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "_player",
-        "type": "address"
-      }
-    ],
-    "name": "getMatchIDsOfAddress",
-    "outputs": [
-      {
-        "name": "matchIds",
-        "type": "uint256[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_matchId",
-        "type": "uint256"
-      }
-    ],
-    "name": "joinMatch",
-    "outputs": [],
-    "payable": true,
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "matchId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "opponent",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "wager",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "outcome",
-        "type": "uint8"
-      }
-    ],
-    "name": "MatchCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "matchId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "opponent",
-        "type": "address"
-      }
-    ],
-    "name": "MatchJoined",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "matchId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "creatorRefund",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "opponent",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "opponentRefuned",
-        "type": "uint256"
-      }
-    ],
-    "name": "MatchKilled",
-    "type": "event"
-  }];
-const address = "0x41CeefDafF7e23e8A1B256AD61312Df859b62c97";
-var contract;
-var activeMatches = []  // Array to store all active matches
-var canCreateMatch = true; // The player can only have one match up at a time
-var canJoinMatch = true;  // The player can only join one match at a time
-var curAcc // current account
+let web3js
+let abi;  // Application Binary Interface of contract
+let address;  // Address associated to contract
+let contract; // Contract to call functions from
+let activeMatches = []  // Array to store all active matches
+let canCreateMatch = true; // The player can only have one match up at a time
+let canJoinMatch = true;  // The player can only join one match at a time
+let curAcc // current account
 
 window.addEventListener('load', function() {
   web3js = new Web3(Web3.givenProvider || "http://localhost:8501");
 
-  if(web3js !== 'undefined'){
-    contract = new web3js.eth.Contract(abi, address) // Obtain contract with specified abi and address
+  $.getJSON('/assets/js/Data.json', function(data){
+    abi = data.contract.abi
+    address = data.contract.address
+  }).then(function() {
+    if(web3js !== 'undefined'){
+      contract = new web3js.eth.Contract(abi, address) // Obtain contract with specified abi and address
 
-    web3js.eth.getAccounts()
-    .then(function(accounts){
-      curAcc = accounts[0]
-      let activeMatchesOps = {
-        from: curAcc
-      }
+      web3js.eth.getAccounts()
+      .then(function(accounts){
+        curAcc = accounts[0]
+        let activeMatchesOps = {
+          from: curAcc
+        }
 
-      updateCanCreateMatch(activeMatchesOps)  // On load (typically page refresh), updateCanCreateMatch
-    })
-    .then(function(){ // After initial account is obtained
-      startApp()
-      
-      window.setInterval(function() {
-        web3js.eth.getAccounts()
-        .then(function(accounts){
-          if(curAcc != accounts[0])
-          {
-            curAcc = accounts[0]
-            location.reload() // Set a Periodical check to see if the account has changed and refresh the page if it has
-          }
-        })
-      }, 100)
-    })
-    .catch(function(err){
-      console.error(err)
-    })
-  }else{
-    notConnected()
-  }
+        updateCanCreateMatch(activeMatchesOps)  // On load (typically page refresh), updateCanCreateMatch
+        updateCanJoinMatch(activeMatchesOps)  // On load (typically page refresh), updateCanJoinMatch
+        _pollCanJoinStatus()  // Start polling
+        _pollCanCreateStatus()  // Start polling
+      })
+      .then(function(){ // After initial account is obtained
+        startApp()
+        
+        _pollAccChange()  // Start polling
+      })
+      .catch(function(err){
+        console.error(err)
+      })
+    }else{
+      notConnected()
+    }
+  })
 })
 
 // Updates player's ability to create a match
@@ -464,14 +71,23 @@ function updateCanCreateMatch(activeMatchesOps){
     })
     .catch(function(error){
       console.log("canCreateMatch Set error!")
-      console.log(error)
+      console.error(error)
     })
+  }
+}
+
+// Disables/enables the "create rps match" button depending on canCreateMatch state
+function toggleCreation(){
+  if(canCreateMatch == true){ // If can create matchs
+    $('#createMatchBtn').prop('disabled', false)  // Enable create match button
+  }else{
+    $('#createMatchBtn').prop('disabled', true) // Disable create match button
   }
 }
 
 // Updates player's ability to join a match
 function updateCanJoinMatch(activeMatchesOps){
-  // Set canCreateMatch based on contract data
+  // Set canJoinMatch based on contract data
   if(sessionStorage.getItem('joinTxnHash') != null){  // If a txnHash was generated via the joinMatch function
     web3js.eth.getTransactionReceipt(sessionStorage.getItem('joinTxnHash')) // Get the transaction Receipt for that transaction
     .then(function(receipt){
@@ -491,10 +107,24 @@ function updateCanJoinMatch(activeMatchesOps){
         }
     })
     .catch(function(error){
-      console.log("canCreateMatch Set error!")
-      console.log(error)
+      console.log("canJoinMatch Set error!")
+      console.error(error)
     })
   }
+}
+
+// Disables/enables the "join rps match" button depending on canJoinMatch state
+function toggleJoining(){
+  $('*[id=joinMatchBtn]').each(function(){ // For each match btn
+    matchDiv = $(this).parent().parent()
+    creatorId = matchDiv.attr('id')
+
+    if(canJoinMatch == false || curAcc == creatorId){ // If I cannot join match OR this account is the creator
+      $(this).prop('disabled', true)  // Disable joining this match
+    }else{
+      $(this).prop('disabled', false) // Enable joining this match
+    }
+  })
 }
 
 // If web3 injection cannot be confirmed
@@ -520,7 +150,7 @@ function startApp(){
     })
   })
   .catch(function(err){
-    console.log(err)
+    console.error(err)
   })
 }
 
@@ -664,7 +294,7 @@ function joinMatch(btn){
     }else if(curAcc == creatorAdr){
       reject(Error("Cannot join your own match"))
     }
-    resolve() // In Eth, need to be converted to Wei
+    resolve()
   })
 
   checkJoining
@@ -735,7 +365,7 @@ function appendListing(match, divToAppendTo = $('#matchList')){
       <button id="rock" onclick="shoot(this)">Rock</button>
       <button id="paper" onclick="shoot(this)">Paper</button>
       <button id="scissor" onclick="shoot(this)">Scissor</button>
-      <button style="margin-left: 60px;" id="join" onclick="joinMatch(this)">Join</button>
+      <button style="margin-left: 60px;" id="joinMatchBtn" onclick="joinMatch(this)">Join</button>
     `
 
   spcDiv.id = 'spcDiv'
@@ -826,6 +456,8 @@ function _compareByEthAsc(matchA, matchB){
   return web3js.utils.toBN(matchA.wager).cmp(web3js.utils.toBN(matchB.wager));
 }
 
+//** Interval Events **//
+
 // Polls specific txnHash until it either dies or is completed
 // ***NOTE: This should be moved to back-end server, as refreshing the page will kill this functionality
 function _pollTxn(txnHash){
@@ -848,5 +480,33 @@ function _pollTxn(txnHash){
       })
     }, 750) // Set interval for every 750 ms
   })
+}
+
+// Check for MetaMask account change, and reload website if necessary
+function _pollAccChange(){
+  setInterval(function() {
+    web3js.eth.getAccounts()
+    .then(function(accounts){
+      if(curAcc != accounts[0])
+      {
+        curAcc = accounts[0]
+        location.reload() // Set a Periodical check to see if the account has changed and refresh the page if it has
+      }
+    })
+  }, 100)
+}
+
+// Disable/Enable Join Match button via periodical variable checks
+function _pollCanJoinStatus(){
+  setInterval(function(){
+    toggleJoining()
+  }, 250)
+}
+
+// Disable/Enable Create Match button via periodical variable checks
+function _pollCanCreateStatus(){
+  setInterval(function(){
+    toggleCreation()
+  }, 250)
 }
 
