@@ -3,26 +3,43 @@ let moveMap = new Map();
     moveMap.set('paper', 1);
     moveMap.set('scissor', 2);
 
+/** Truffle-contract setup **/
+let provider = new Web3.providers.HttpProvider("http://localhost:8501")
+let truffleContract = require("truffle-contract") // Contract to call functions from
+let MyTruffleContract = null // set in window load function
+let truffleInstance = null  // set in window load function
+
 let web3js
-let abi;  // Application Binary Interface of contract
-let address;  // Address associated to contract
-let contract; // Contract to call functions from
+let contractAbi;  // Application Binary Interface of contract
+let contractAddress;  // Address associated to contract
+
 let activeMatches = []  // Array to store all active matches
 let canCreateMatch = true; // The player can only have one match up at a time
 let canJoinMatch = true;  // The player can only join one match at a time
 let curAcc // current account
-
 let pastEvents = null;
 
 window.addEventListener('load', function() {
-  web3js = new Web3(Web3.givenProvider || "http://localhost:8501");
+  web3js = new Web3(window.web3.currentProvider || "http://localhost:8501");
 
   $.getJSON('/assets/js/Data.json', function(data){
     abi = data.contract.abi
-    address = data.contract.address
+    contractAddress = data.contract.address
   }).then(function() {
+    MyTruffleContract = truffleContract({
+      abi: contractAbi,
+      address: contractAddress
+    })
+    MyTruffleContract.setProvider(provider);
+
     if(web3js !== 'undefined'){
-      contract = new web3js.eth.Contract(abi, address) // Obtain contract with specified abi and address
+      MyTruffleContract.deployed()
+      .then(function(instance){
+        truffleInstance = instance
+        resolve()
+      })
+      
+      contract = new web3js.eth.Contract(abi, contractAddress) // Obtain contract with specified abi and address
 
       web3js.eth.getAccounts()
       .then(function(accounts){
@@ -47,7 +64,7 @@ window.addEventListener('load', function() {
         console.error(err)
       })
     }else{
-      notConnected()
+      window.web3 = new Web3(new Web3.providers.HttpProvider('<maintest/testnet infura link here>'))
     }
   })
 })
@@ -129,12 +146,6 @@ function toggleJoining(){
       $(this).prop('disabled', false) // Enable joining this match
     }
   })
-}
-
-// If web3 injection cannot be confirmed
-// Implement timer to retry connecting and startApp()-ing
-function notConnected(){
-  console.log("Not connected")
 }
 
 // Starts app after web3 injection has been confirmed
@@ -419,8 +430,8 @@ function insertListing(match){
 // Events do not fire from js, even though they fire from solidity... Needs to be fixed eventually
 function bindEvents(resolve, reject){
   console.log("Binding Events...")
-  
-  contract.events.MatchCreated()  // When MatchCreated event is fired
+
+  truffleInstance.MatchCreated()  // When MatchCreated event is fired
   .on('data', function(event){ // On what it returns to me
     console.log("MatchCreated event fired!")
     data = event.returnValues
