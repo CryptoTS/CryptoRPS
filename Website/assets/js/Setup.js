@@ -1,4 +1,4 @@
-/** VarSetup.js
+/** Setup.js
 	
 	Purpose: To setup variables used by RPS.js
 	Mostly to organize RPS.js better
