@@ -4,7 +4,9 @@ let recentBlock = 0
 let pastEvents = null;
 
 window.addEventListener('load', function() {
-	web3Setup.then(() => {
+	web3Setup
+	.then(() => networkSetup)	// TODO: Needs to synchronously call web3Setup -> networkSetup -> onwards
+	.then(() => {
 		return Promise.all([contractSetup, curAccSetup])	// Complete these setup item asyncronously
 	}).then(() => {
 		const activeMatchesOps = {
@@ -93,11 +95,11 @@ function notConnected(){
 
 // Starts app after web3 injection has been confirmed
 function startApp(){
-  checkNetworkProm = new Promise(checkNetwork)
+  networkSetup
   activeMatchesSortedProm = new Promise(getActiveMatchesSorted)
   bindEventsProm = new Promise(bindEvents)
 
-  checkNetworkProm  // First check Network
+  networkSetup  // First check Network
   .then(function(networkId){
     activeMatchesSortedProm // Then get active matches from contract and display them
     .then(function(activeMatchesSorted){
@@ -109,27 +111,6 @@ function startApp(){
   })
   .catch(function(err){
     console.error(err)
-  })
-}
-
-// Checks the MetaMask network to ensure user is on the mainnet 
-function checkNetwork(resolve, reject){
-  web3.eth.net.getId((err, netId) => {
-    switch (netId) {
-      case 1:
-        // In mainnet
-        console.log('This is mainnet')
-        resolve(1)
-        break
-      case 3:
-        // In Ropset test network
-        console.log('This is the ropsten test network.')
-        resolve(3)
-        break
-      default:
-        // In some other network (may or may not be unknown)
-        reject(Error("This is an unknown network"))
-    }
   })
 }
 

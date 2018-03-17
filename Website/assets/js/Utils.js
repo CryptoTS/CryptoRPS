@@ -7,7 +7,7 @@
 		Setting front-end characterstics based on variables
 **/
 
-/** FRONT-END MODIFICATION FUNCTION-SET **/
+/** HTML MODIFICATION FUNCTION-SET **/
 
 // Disables/enables the "join rps match" button depending on canJoinMatch state
 function toggleJoining(){
@@ -32,7 +32,18 @@ function toggleCreation(){
   }
 }
 
+/******************************************/
+/** GENERAL FUNCTION-SET **/
 
+// Execute a list of Promise return functions in series
+function pSeries(list) {  
+	var p = Promise.resolve();
+	return list.reduce(function(pacc, fn) {
+		return pacc = pacc.then(fn);
+	}, p);
+}
+
+/******************************************/
 /** POLLING FUNCTION-SET**/
 
 // Check for MetaMask account change, and reload website if necessary
@@ -112,3 +123,5 @@ function pollRecentCreations(interval){
 	}, interval)
 	console.log("Started pollRecentCreations")
 }
+
+/******************************************/

@@ -31,6 +31,9 @@ const PollTimes = Object.freeze({
 const PromiseCode = Object.freeze({
 	Success: "Promise succeeded as intended",
 	ConnectionFailed: "Connection failed to be established",
+	MainNet: "In MainNet",
+	RopNet: "In Ropsten",
+	UnknownNet: "In unkown network",
 	Failed: "Something went wrong... promise failed"
 });
 
@@ -48,6 +51,7 @@ let canCreateMatch
 let canJoinMatch
 
 
+/** SETUP FUNCTIONS **/
 
 const web3Setup = new Promise((resolve, reject) => {
 	web3 = new Web3(Web3.givenProvider || "http://localhost:8501");
@@ -57,6 +61,27 @@ const web3Setup = new Promise((resolve, reject) => {
 	}else{
 		reject(PromiseCode.Failed)
 	}
+});
+
+// Checks the MetaMask network to ensure user is on the mainnet 
+const networkSetup = new Promise((resolve, reject) => {
+	return web3.eth.net.getId().then((netId) =>
+	{
+		console.log("networkSetup complete")
+		switch (netId) {
+			case 1:
+				// In mainnet
+				resolve(PromiseCode.MainNet)
+				break
+			case 3:
+				// In Ropset test network
+				resolve(PromiseCode.RopNet)
+				break
+			default:
+				// In some other network (may or may not be unknown)
+				reject(PromiseCode.UnknownNet)
+		}
+	})
 });
 
 const contractSetup = new Promise((resolve, reject) => {
@@ -87,9 +112,3 @@ const curAccSetup = new Promise((resolve, reject) => {
 });
 
 
-function sleep(miliseconds) {
-   var currentTime = new Date().getTime();
-
-   while (currentTime + miliseconds >= new Date().getTime()) {
-   }
-}
