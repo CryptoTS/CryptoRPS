@@ -11,6 +11,7 @@ let activeMatches = []  // Array to store all active matches
 let canCreateMatch = true; // The player can only have one match up at a time
 let canJoinMatch = true;  // The player can only join one match at a time
 let curAcc // current account
+let recentBlock = 0
 
 let pastEvents = null;
 
@@ -36,7 +37,8 @@ window.addEventListener('load', function() {
         _pollCanJoinStatus()  // Start polling
         _pollCanCreateStatus()  // Start polling
 
-        _pollPastEvents()
+        _pollRecentBlock()
+        _pollRecentEvents()
       })
       .then(function(){ // After initial account is obtained
         startApp()
@@ -514,9 +516,19 @@ function _pollCanCreateStatus(){
   }, 250)
 }
 
-function _pollPastEvents(){
+function _pollRecentBlock(){
   setInterval(function(){
-    contract.getPastEvents('MatchCreated', {fromBlock: 0, toBlock:'latest'}, function(error, events){
+    web3js.eth.getBlockNumber()
+    .then(function (blockNum){
+      recentBlock = blockNum
+      console.log(recentBlock)
+    })
+  }, 5000);
+}
+
+function _pollRecentEvents(){
+  setInterval(function(){
+    contract.getPastEvents('MatchCreated', {fromBlock: recentBlock, toBlock:'latest'}, function(error, events){
       eventString = JSON.stringify(events)
       pastEventsString = JSON.stringify(pastEvents)
       if(eventString != pastEventsString){
