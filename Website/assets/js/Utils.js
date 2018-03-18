@@ -33,7 +33,114 @@ function toggleCreation(){
 }
 
 /******************************************/
+
+/** PROMISE FUNCTION-SET **/
+
+// Determines if a specified create transaction number, associated to a specific account,
+// has been *succesfully* mined on the blockchain
+// True if transaction has been mined succesfully; false otherwise
+const creationStatus = function(createTxn, createAcc) {
+	return new Promise((resolve, reject) => {
+		if(createTxn == null)	reject(PromiseCode.InvalidTxn)
+		if(createAcc == null || createAcc == 0)	reject(PromiseCode.InvalidAcc)
+
+		web3.eth.getTransactionReceipt(createTxn).then((receipt) => {
+			if(receipt == null && createAcc == curAcc){
+			// Checking receipt == null checks if transaction is still pending
+			// Check createAcc == curAcc checks if the account associated to that transaction is the current account (would be false if 1 player switched accounts)
+				pollTxn(createTxn).then((creation) => {
+					resolve(creation.didSucceed)
+				})
+			}else{
+				if(createAcc != curAcc){
+					resolve(false)
+				}else{
+					resolve(receipt.status == 1)	// true if success
+				}
+			}
+		}).catch((error) => {
+			reject(error)
+		})
+	});
+}
+
+// Determines if the current account can create another match
+// Resolves to true if this player can create more matches; false otherwise
+const canCreate = (resolve, reject) => {
+	contract.methods.getNumActiveCreatedMatches().call({from: curAcc}).then((numCreates) => {
+		resolve(numCreates < maxCreates)
+	}).catch((error) => {
+		reject(error)
+	})
+}
+
+// Determines if a specified join transaction number, associated to a specific account,
+// has been *succesfully* mined on the blockchain
+// True if transaction has been mined succesfully; false otherwise
+const joiningStatus = function(joinTxn, joinAcc){
+	return new Promise((resolve, reject) => {
+		if(joinTxn == null)	reject(PromiseCode.InvalidTxn)
+		if(joinAcc == null || joinAcc == 0)	reject(PromiseCode.InvalidAcc)
+
+		web3.eth.getTransactionReceipt(joinTxn).then((receipt) => {
+			if(receipt == null && joinAcc == curAcc){
+				pollTxn(joinTxn).then((result) => {
+					resolve(result.didSucceed)
+				})
+			}else{
+				if(createAcc != curAcc){
+					resolve(false)
+				}else{
+					resolve(receipt.status == 1)
+				}
+			}
+		}).catch((error) => {
+			reject(error)
+		})
+	});
+}
+
+// Determines if the current account can join another match
+// Resolves to true if this player can join more matches; false otherwise
+const canJoin = (resolve, reject) => {
+	contract.methods.getNumActiveJoinedMatches().call({from: curAcc}).then((numJoins) => {
+		resolve(numJoins < maxJoins)
+	}).catch((error) => {
+		reject(error)
+	})
+}
+
+/******************************************/
+
 /** GENERAL FUNCTION-SET **/
+
+// Updates this player's ability to create a match
+function updateCanCreateMatch(){
+	let createTxn = sessionStorage.getItem('createTxnHash')
+	let createAcc = sessionStorage.getItem('createTxnAcc')
+	
+	creationStatus(createTxn, createAcc).then(() => {
+		return new Promise(canCreate)
+	}).then((canCreateResult) => {
+		canCreateMatch = canCreateResult;
+	}).catch((error) => {
+		errorHandler(error)
+	})
+}
+
+// Updates player's ability to join a match
+function updateCanJoinMatch(){
+	let joinTxn = sessionStorage.getItem('joinTxnHash')
+	let joinAcc = sessionStorage.getItem('joinTxnAcc')
+
+	joiningStatus(joinTxn, joinAcc).then(() => {
+		return new Promise(canJoin)
+	}).then((canJoinResult) => {
+		canJoinMatch = canJoinResult
+	}).catch((error) => {
+		errorHandler(error)
+	})
+}
 
 // Execute a list of Promise return functions in series
 function pSeries(list) {  
@@ -41,6 +148,19 @@ function pSeries(list) {
 	return list.reduce(function(pacc, fn) {
 		return pacc = pacc.then(fn);
 	}, p);
+}
+
+// Handles errors thrown in RPS promises
+function errorHandler(error){
+	switch (error){
+		case PromiseCode.UnknownNet:
+			alert("Please move to MainNet")
+			break
+		case PromiseCode.InvalidTxn:
+			break
+		default:
+			console.error(error)
+	}
 }
 
 /******************************************/
@@ -61,6 +181,7 @@ function pollAccChange(interval){
 
 // Polls specific txnHash until it either dies or is completed
 function pollTxn(txnHash, interval){
+	console.log("HELLO")
 	return new Promise(function(resolve){					// This should resolve itself once the transaction succeeds/fails
 		const pollTxnInterval = setInterval(function(){		// Check for transcation receipt every <interal> ms
 			web3.eth.getTransactionReceipt(txnHash)			// Get transaction receipt with web3

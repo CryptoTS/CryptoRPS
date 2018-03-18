@@ -4,17 +4,15 @@ let recentBlock = 0
 let pastEvents = null;
 
 window.addEventListener('load', function() {
-	web3Setup
-	.then(() => networkSetup)	// TODO: Needs to synchronously call web3Setup -> networkSetup -> onwards
+	new Promise(web3Setup)
 	.then(() => {
-		return Promise.all([contractSetup, curAccSetup])	// Complete these setup item asyncronously
+		return new Promise(networkSetup)
 	}).then(() => {
-		const activeMatchesOps = {
-			from: curAcc
-		}
-
-		updateCanCreateMatch(activeMatchesOps)  // On load (typically page refresh), updateCanCreateMatch
-		updateCanJoinMatch(activeMatchesOps)  // On load (typically page refresh), updateCanJoinMatch
+		return Promise.all([new Promise(contractSetup), new Promise(curAccSetup)])
+		// Complete these setup items asyncronously, but only move on once all are complete
+	}).then(() => {		
+		updateCanCreateMatch()  // On load (typically page refresh), updateCanCreateMatch
+		updateCanJoinMatch()  // On load (typically page refresh), updateCanJoinMatch
 		pollCanJoinStatus(250)  // Start polling
 		pollCanCreateStatus(250)  // Start polling
 
@@ -25,67 +23,9 @@ window.addEventListener('load', function() {
 		startApp()
 	})
 	.catch((err) => {
-		console.error(err)
-	})	
+		errorHandler(err)
+	})
 })
-
-// Updates player's ability to create a match
-function updateCanCreateMatch(activeMatchesOps){
-  // Set canCreateMatch based on contract data
-  if(sessionStorage.getItem('createTxnHash') != null){  // If a txnHash was generated via the createMatch function
-    web3.eth.getTransactionReceipt(sessionStorage.getItem('createTxnHash')) // Get the transaction Receipt for that transaction
-    .then(function(receipt){
-      if(receipt == null && sessionStorage.getItem('createTxnAcc') == curAcc){  // If receipt is null (aka not yet completed)
-                                                                          // AND the cur account matches the account that made the transaction
-        canCreateMatch = false  // This means that the transaction for this account is still being created, so restrict creation
-        pollTxn(sessionStorage.getItem('createTxnHash')) // Keep polling the transaction until it's resolved
-          .then(function (result){
-            canCreateMatch = !result.didSucceed // If the transaction succeeded (went through) then you can not create a game
-          })
-        }else{  // Else, the transaction already exists (/a different account is being used)
-          contract.methods.getNumActiveCreatedMatches().call(activeMatchesOps)  // Since the transaction is complete, the contract has been updated
-                                                                                // getNumActiveCreatedMatches() this account to see num active created matches for this account
-          .then(function (numMatches){
-            canCreateMatch = !(numMatches > 0)  // If this player has more than 0 active created matches, they cannot create matches
-          })
-        }
-    })
-    .catch(function(error){
-      console.log("canCreateMatch Set error!")
-      console.error(error)
-    })
-  }
-}
-
-// Updates player's ability to join a match
-function updateCanJoinMatch(activeMatchesOps){
-  // Set canJoinMatch based on contract data
-  if(sessionStorage.getItem('joinTxnHash') != null){  // If a txnHash was generated via the joinMatch function
-    web3.eth.getTransactionReceipt(sessionStorage.getItem('joinTxnHash')) // Get the transaction Receipt for that transaction
-    .then(function(receipt){
-      if(receipt == null && sessionStorage.getItem('joinTxnAcc') == curAcc){  // If receipt is null (aka not yet completed)
-                                                                          // AND the cur account matches the account that made the transaction
-        canJoinMatch = false  // This means that the transaction for this account is still joining, so restrict join ability
-        pollTxn(sessionStorage.getItem('joinTxnHash')) // Keep polling the transaction until it's resolved
-          .then(function (result){
-            canJoinMatch = !result.didSucceed // If the transaction succeeded (went through) then you can not join a game
-          })
-        }else{  // Else, the transaction already exists (/a different account is being used)
-          contract.methods.getNumActiveJoinedMatches().call(activeMatchesOps) // Since the transaction is complete, the contract has been updated
-                                                                              // getNumActiveJoinedMatches() this account to see num active joined matches for this account
-          .then(function (numMatches){
-            canJoinMatch = !(numMatches > 0)  // If this player has more than 0 active joined matches, they cannot join matches
-          })
-        }
-    })
-    .catch(function(error){
-      console.log("canJoinMatch Set error!")
-      console.error(error)
-    })
-  }
-}
-
-
 
 // If web3 injection cannot be confirmed
 // Implement timer to retry connecting and startApp()-ing
@@ -95,23 +35,20 @@ function notConnected(){
 
 // Starts app after web3 injection has been confirmed
 function startApp(){
-  networkSetup
-  activeMatchesSortedProm = new Promise(getActiveMatchesSorted)
-  bindEventsProm = new Promise(bindEvents)
+	networkSetup
+	activeMatchesSortedProm = new Promise(getActiveMatchesSorted)
+	bindEventsProm = new Promise(bindEvents)
 
-  networkSetup  // First check Network
-  .then(function(networkId){
-    activeMatchesSortedProm // Then get active matches from contract and display them
-    .then(function(activeMatchesSorted){
-      for(let i = 0; i < activeMatchesSorted.length; i++){
-        appendListing(activeMatchesSorted[i])
-      }
-      bindEventsProm  // Then bind contract events to functions
-    })
-  })
-  .catch(function(err){
-    console.error(err)
-  })
+	activeMatchesSortedProm.then(function(activeMatchesSorted)
+	{
+		for(let i = 0; i < activeMatchesSorted.length; i++){
+			appendListing(activeMatchesSorted[i])
+		}
+		bindEventsProm  // Then bind contract events to functions
+	})
+	.catch(function(err){
+	console.error(err)
+	})
 }
 
 // List the ongoing matches that are on the block chain
@@ -192,7 +129,7 @@ function createMatch(){
       contract.methods.createMatch().send(createMatchOps) // Send createMatch() w/ specified options
       .on('transactionHash', function(hash){  // When blockchain revieves function request
         canCreateMatch = false  // Player is in the process of creating match. Cannot create another
-        // console.log("Starting create transaction...")
+        console.log("Starting create transaction...")
 
         sessionStorage.setItem('createTxnHash', hash)
         sessionStorage.setItem('createTxnAcc', curAcc)
