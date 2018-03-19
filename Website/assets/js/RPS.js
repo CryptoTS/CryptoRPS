@@ -25,46 +25,17 @@ function notConnected(){
 
 // Starts app after web3 injection has been confirmed
 function startApp(){
-	activeMatchesSortedProm = new Promise(getActiveMatchesSorted)
-	bindEventsProm = new Promise(bindEvents)
 
-	activeMatchesSortedProm.then(function(activeMatchesSorted)
+	new Promise(getActiveMatches).then(function(sortedMatches)
 	{
-		for(let i = 0; i < activeMatchesSorted.length; i++){
-			appendListing(activeMatchesSorted[i])
+		for(let i = 0; i < sortedMatches.length; i++){
+			appendListing(sortedMatches[i])
 		}
-		bindEventsProm  // Then bind contract events to functions
+	}).then(() => {
+		new Promise(bindEvents)
+	}).catch(function(err){
+		console.error(errorHandler(err))
 	})
-	.catch(function(err){
-	console.error(err)
-	})
-}
-
-// List the ongoing matches that are on the block chain
-function getActiveMatchesSorted(resolve, reject){
-  let activeMatchProms = [] // Array to store all active match requests (ie promises)
-  
-  contract.methods.getActiveMatchIDs().call() // Get all active match IDs from contract
-  .then(function (activeMatchIDs){  // When the activeMatchIDs (which is an array) is given back to us...
-    // console.log("Active Match IDs: ")
-    // console.log(activeMatchIDs)
-    for(let i = 0; i < activeMatchIDs.length; i++){ // Go through each activeMatchID
-      activeMatchProms.push(contract.methods.getMatch(activeMatchIDs[i]).call()  // Get each match associated to that active match ID
-      .then(function(matchInfo){ // Push each call (which is a promise) onto active match promises array
-        activeMatches.push(matchInfo) // Upon each getMatch completion, push that matchIDs matchInfo onto the activeMatches array
-      }))
-    }
-  })
-  .then(function(){ // Once all getMatch requests (ie promises) have been pushed onto the activeMatchProms array
-    Promise.all(activeMatchProms) // Once all promises in the activeMatchProms are resolved
-    .then(()=>{ // Then...
-      // console.log("All are complete!!")
-      resolve(activeMatches.sort(_compareByEthDesc))  // Resolve this function with the sorted matches
-    })
-  })
-  .catch(function(err){
-    reject(err) // If any error occurs, reject this function with that error
-  })
 }
 
 // Fired when rock/paper/scissor is played (ie, 'Rock, Paper, Scissor... Shoot!')
@@ -306,18 +277,5 @@ function bindEvents(resolve, reject){
 
   console.log("Events Bound")
   resolve(true)
-}
-
-/** HELPER FUNCTIONS **/
-// Compares two matches by their wager amounts. Uses BN.js to safeguard 
-// Defaults ordering in descending order (highest to lowest)
-function _compareByEthDesc(matchA, matchB){
-  return web3.utils.toBN(matchA.wager).cmp(web3.utils.toBN(matchB.wager)) * -1;
-}
-
-// Compares two matches by their wager amounts. Uses BN.js to safeguard 
-// Defaults ordering in ascending order (lowest to highest)
-function _compareByEthAsc(matchA, matchB){
-  return web3.utils.toBN(matchA.wager).cmp(web3.utils.toBN(matchB.wager));
 }
 

@@ -22,7 +22,6 @@ canCreateMatch:	Boolean to check if the player can create a match
 canJoinMatch:	Boolean to check if the player can join a match
 recentBlock:	A periodically updated block number. Transactions start being searched from this block
 pastEvents:		An object storing events from recentBlock to most recent block
-activeMatches:	Might not be needed... potentially remove
     ******** ******** **/
 
 /** STATIC VARIABLES **/
@@ -64,7 +63,6 @@ let canCreateMatch
 let canJoinMatch
 let recentBlock
 let pastEvents
-let activeMatches = []  // Array to store all active matches
 
 
 /** SETUP FUNCTIONS **/

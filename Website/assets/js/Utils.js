@@ -102,11 +102,35 @@ const joiningStatus = function(joinTxn, joinAcc){
 	});
 }
 
+
+
 // Determines if the current account can join another match
 // Resolves to true if this player can join more matches; false otherwise
 const canJoin = (resolve, reject) => {
 	contract.methods.getNumActiveJoinedMatches().call({from: curAcc}).then((numJoins) => {
 		resolve(numJoins < maxJoins)
+	}).catch((error) => {
+		reject(error)
+	})
+}
+
+// Get all matches that are currently active (ie. ongoing) in the contract
+// then sorts them
+const getActiveMatches = (resolve, reject) => {
+	let matchPromises = []
+	let activeMatches = []
+
+	contract.methods.getActiveMatchIDs().call().then((matchIDs) => {	// Get active (ie. ongoing) match IDs
+		for(let i = 0; i < matchIDs.length; i++){						// Go through each match ID
+			let curID = matchIDs[i]
+			matchPromises.push(contract.methods.getMatch(curID).call().then((matchInfo) => {	// Get the curID's match info
+				activeMatches.push(matchInfo)													// Store in array
+			}))
+		}
+	}).then(() => {
+		Promise.all(matchPromises).then(() => {				// Once all match infos have been obtained from contract
+			resolve(activeMatches.sort(_compareByEthDesc))	// Sort them, and resolve promise
+		})
 	}).catch((error) => {
 		reject(error)
 	})
@@ -245,6 +269,21 @@ function pollRecentCreations(interval){
 		})
 	}, interval)
 	console.log("Started pollRecentCreations")
+}
+
+/******************************************/
+
+/** COMPARATOR FUNCTIONS **/
+// Compares two matches by their wager amounts. Uses BN.js to safeguard 
+// Defaults ordering in descending order (highest to lowest)
+function _compareByEthDesc(matchA, matchB){
+  return web3.utils.toBN(matchA.wager).cmp(web3.utils.toBN(matchB.wager)) * -1;
+}
+
+// Compares two matches by their wager amounts. Uses BN.js to safeguard 
+// Defaults ordering in ascending order (lowest to highest)
+function _compareByEthAsc(matchA, matchB){
+  return web3.utils.toBN(matchA.wager).cmp(web3.utils.toBN(matchB.wager));
 }
 
 /******************************************/
