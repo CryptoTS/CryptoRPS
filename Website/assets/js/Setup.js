@@ -20,6 +20,9 @@ contract:		An instance of the solidity contract. Interaction with that contract 
 curAcc:			The current MetaMask account being used
 canCreateMatch:	Boolean to check if the player can create a match
 canJoinMatch:	Boolean to check if the player can join a match
+recentBlock:	A periodically updated block number. Transactions start being searched from this block
+pastEvents:		An object storing events from recentBlock to most recent block
+activeMatches:	Might not be needed... potentially remove
     ******** ******** **/
 
 /** STATIC VARIABLES **/
@@ -31,7 +34,9 @@ const maxJoins = 1
 const PollTimes = Object.freeze({
 	AccCheck: 250,
 	CreateStatus: 250,
-	JoinStatus: 250
+	JoinStatus: 250,
+	BlockCheck: 2500,
+	CreationCheck: 500
 });
 
 const PromiseCode = Object.freeze({
@@ -57,6 +62,9 @@ let contract
 let curAcc
 let canCreateMatch
 let canJoinMatch
+let recentBlock
+let pastEvents
+let activeMatches = []  // Array to store all active matches
 
 
 /** SETUP FUNCTIONS **/
@@ -130,6 +138,18 @@ const sessionStorageSetup = (resolve, reject) => {
 	resolve(PromiseCode.Success)
 };
 
+// Gets the most recent mined block number
+const recentBlockSetup = (resolve, reject) => {
+	web3.eth.getBlockNumber()
+	.then(function (blockNum){
+		recentBlock = blockNum
+		pollRecentBlock(PollTimes.BlockCheck)	// Start polling for block updates
+		resolve(PromiseCode.Success)
+	}).catch((error) => {
+		reject(error)
+	})
+}
+
 // Identical to updateCanCreateMatch function, but also starts
 // polling and is a promise
 const canCreateSetup = (resolve, reject) => {
@@ -155,15 +175,13 @@ const canJoinSetup = (resolve, reject) => {
 	console.log("Starting...")
 
 	joiningStatus(joinTxn, joinAcc).then(() => {
-		console.log("1...")
 		return new Promise(canJoin)
 	}).then((canJoinResult) => {
-		console.log("done...")
 		canJoinMatch = canJoinResult
 		pollCanJoinStatus(PollTimes.JoinStatus)	// TODO: Is this really necessary?
 		resolve(PromiseCode.Success)
 	}).catch((error) => {
-		console.log("err...")
 		reject(error)
 	})
 }
+

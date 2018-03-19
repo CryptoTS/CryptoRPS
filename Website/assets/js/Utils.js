@@ -11,25 +11,25 @@
 
 // Disables/enables the "join rps match" button depending on canJoinMatch state
 function toggleJoining(){
-  $('*[id=joinMatchBtn]').each(function(){ // For each match btn
-    matchDiv = $(this).parent().parent()
-    creatorId = matchDiv.attr('id')
+	$('*[id=joinMatchBtn]').each(function(){ // For each match btn
+		matchDiv = $(this).parent().parent()
+		creatorId = matchDiv.attr('id')
 
-    if(canJoinMatch == false || curAcc == creatorId){ // If I cannot join match OR this account is the creator
-      $(this).prop('disabled', true)  // Disable joining this match
-    }else{
-      $(this).prop('disabled', false) // Enable joining this match
-    }
-  })
+		if(canJoinMatch == false || curAcc == creatorId){ // If I cannot join match OR this account is the creator
+			$(this).prop('disabled', true)  // Disable joining this match
+		}else{
+			$(this).prop('disabled', false) // Enable joining this match
+		}
+	})
 }
 
 // Disables/enables the "create rps match" button depending on canCreateMatch state
 function toggleCreation(){
-  if(canCreateMatch == true){ // If can create matchs
-    $('#createMatchBtn').prop('disabled', false)  // Enable create match button
-  }else{
-    $('#createMatchBtn').prop('disabled', true) // Disable create match button
-  }
+	if(canCreateMatch == true){ // If can create matchs
+		$('#createMatchBtn').prop('disabled', false)  // Enable create match button
+	}else{
+		$('#createMatchBtn').prop('disabled', true) // Disable create match button
+	}
 }
 
 /******************************************/

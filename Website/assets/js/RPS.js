@@ -1,24 +1,15 @@
-let activeMatches = []  // Array to store all active matches
-let recentBlock = 0
-
-let pastEvents = null;
-
 window.addEventListener('load', function() {
-	new Promise(web3Setup)
-	.then(() => {
+	new Promise(web3Setup).then(() => {
 		return new Promise(networkSetup)
 	}).then(() => {
-		return Promise.all([new Promise(contractSetup), new Promise(curAccSetup), new Promise(sessionStorageSetup)])
+		return Promise.all([new Promise(contractSetup), new Promise(curAccSetup),
+			new Promise(sessionStorageSetup), new Promise(recentBlockSetup)])
 		// Complete these setup items asyncronously, but only move on once all are complete
 	}).then(() => {		
 		return Promise.all([new Promise(canCreateSetup), new Promise(canJoinSetup)])
 		// Complete these setup items asyncronously, but only move on once all are complete
-	})
-	.then(() => {
-		pollRecentBlock(2500)
-		pollRecentCreations(250)
-	})
-	.then(() => {
+	}).then(() => {
+		pollRecentCreations(PollTimes.CreationCheck)
 		startApp()
 	})
 	.catch((err) => {
@@ -34,7 +25,6 @@ function notConnected(){
 
 // Starts app after web3 injection has been confirmed
 function startApp(){
-	networkSetup
 	activeMatchesSortedProm = new Promise(getActiveMatchesSorted)
 	bindEventsProm = new Promise(bindEvents)
 
