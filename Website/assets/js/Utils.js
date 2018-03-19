@@ -42,7 +42,8 @@ function toggleCreation(){
 const creationStatus = function(createTxn, createAcc) {
 	return new Promise((resolve, reject) => {
 		if(createTxn == null)	reject(PromiseCode.InvalidTxn)
-		if(createAcc == null || createAcc == 0)	reject(PromiseCode.InvalidAcc)
+		if(createAcc == null)	reject(PromiseCode.InvalidAcc)
+		if(createTxn == 0 || createAcc == 0)	resolve(true)
 
 		web3.eth.getTransactionReceipt(createTxn).then((receipt) => {
 			if(receipt == null && createAcc == curAcc){
@@ -80,7 +81,8 @@ const canCreate = (resolve, reject) => {
 const joiningStatus = function(joinTxn, joinAcc){
 	return new Promise((resolve, reject) => {
 		if(joinTxn == null)	reject(PromiseCode.InvalidTxn)
-		if(joinAcc == null || joinAcc == 0)	reject(PromiseCode.InvalidAcc)
+		if(joinAcc == null)	reject(PromiseCode.InvalidAcc)
+		if(joinTxn == 0 || joinAcc == 0)	resolve(true)
 
 		web3.eth.getTransactionReceipt(joinTxn).then((receipt) => {
 			if(receipt == null && joinAcc == curAcc){
@@ -124,7 +126,7 @@ function updateCanCreateMatch(){
 	}).then((canCreateResult) => {
 		canCreateMatch = canCreateResult;
 	}).catch((error) => {
-		errorHandler(error)
+		console.error(errorHandler(error))
 	})
 }
 
@@ -138,7 +140,7 @@ function updateCanJoinMatch(){
 	}).then((canJoinResult) => {
 		canJoinMatch = canJoinResult
 	}).catch((error) => {
-		errorHandler(error)
+		console.error(errorHandler(error))
 	})
 }
 
@@ -159,7 +161,7 @@ function errorHandler(error){
 		case PromiseCode.InvalidTxn:
 			break
 		default:
-			console.error(error)
+			return error
 	}
 }
 

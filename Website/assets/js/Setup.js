@@ -29,7 +29,9 @@ const maxCreates = 1
 const maxJoins = 1
 
 const PollTimes = Object.freeze({
-	AccCheck: 250
+	AccCheck: 250,
+	CreateStatus: 250,
+	JoinStatus: 250
 });
 
 const PromiseCode = Object.freeze({
@@ -38,7 +40,6 @@ const PromiseCode = Object.freeze({
 	MainNet: "In MainNet",
 	RopNet: "In Ropsten",
 	UnknownNet: "In unkown network",
-	NoStorageItem: "Session Storage item not found",
 	InvalidTxn: "Invalid transaction hash",
 	InvalidAcc: "Invalid account hash",
 	Failed: "Something went wrong... promise failed"
@@ -108,7 +109,7 @@ const curAccSetup = (resolve, reject) => {
 	}).then(() => {
 		if(curAcc != null){
 			console.log("curAcc setup complete")
-			pollAccChange(PollTimes.AccCheck);
+			pollAccChange(PollTimes.AccCheck)
 			resolve(PromiseCode.Success)
 		}else{
 			reject()	// Fallback to rejecting with web3's error
@@ -118,35 +119,51 @@ const curAccSetup = (resolve, reject) => {
 	})
 };
 
-// Updates player's ability to create a match
+// Initialize storage items to 0 for proper error handling in
+// Utils.js creationStatus and joiningStatus
+const sessionStorageSetup = (resolve, reject) => {
+	sessionStorage.setItem('createTxnHash', 0)
+	sessionStorage.setItem('createTxnAcc', 0)
+	sessionStorage.setItem('joinTxnHash', 0)
+	sessionStorage.setItem('joinTxnAcc', 0)
+
+	resolve(PromiseCode.Success)
+};
+
+// Identical to updateCanCreateMatch function, but also starts
+// polling and is a promise
 const canCreateSetup = (resolve, reject) => {
-	let activeMatchesOps = {from: curAcc}
-	// Set canCreateMatch based on contract data
-	if(sessionStorage.getItem('createTxnHash') != null){
-																				// If a txnHash was generated via the createMatch function
-		web3.eth.getTransactionReceipt(sessionStorage.getItem('createTxnHash')).then(function(receipt){
-																				// Get the transaction Receipt for that transaction
-			if(receipt == null && sessionStorage.getItem('createTxnAcc') == curAcc){
-																				// If receipt is null (aka not yet completed)
-																				// AND the cur account matches the account that made the transaction
-				canCreateMatch = false											// This means that the transaction for this account is still being created, so restrict creation
-				pollTxn(sessionStorage.getItem('createTxnHash')).then(function (err, result){
-																				// Keep polling the transaction until it's resolved
-					canCreateMatch = !result.didSucceed							// If the transaction succeeded (went through) then you can not create a game
-				})
-			}else{																// Else, the transaction already exists (/a different account is being used)
-				contract.methods.getNumActiveCreatedMatches().call(activeMatchesOps).then(function (numMatches){
-																				// Since the transaction is complete, the contract has been updated
-																				// getNumActiveCreatedMatches() this account to see num active created matches for this account
-					canCreateMatch = !(numMatches > maxCreates)					// If this player has more than 0 active created matches, they cannot create matches
-				})
-			}
-		}).catch(function(error){
-			reject(error)
-		})
-	}else{
-		canCreateMatch = true
-		reject(PromiseCode.NoStorageItem)
-	}
+	let createTxn = sessionStorage.getItem('createTxnHash')
+	let createAcc = sessionStorage.getItem('createTxnAcc')
+	
+	creationStatus(createTxn, createAcc).then(() => {
+		return new Promise(canCreate)
+	}).then((canCreateResult) => {
+		canCreateMatch = canCreateResult;
+		pollCanCreateStatus(PollTimes.CreateStatus)	// TODO: Is this really necessary?
+		resolve(PromiseCode.Success)
+	}).catch((error) => {
+		reject(error)
+	})
 }
 
+// Identical to updateCanJoinMatch function, but also starts
+// polling and is a promise
+const canJoinSetup = (resolve, reject) => {
+	let joinTxn = sessionStorage.getItem('joinTxnHash')
+	let joinAcc = sessionStorage.getItem('joinTxnAcc')
+	console.log("Starting...")
+
+	joiningStatus(joinTxn, joinAcc).then(() => {
+		console.log("1...")
+		return new Promise(canJoin)
+	}).then((canJoinResult) => {
+		console.log("done...")
+		canJoinMatch = canJoinResult
+		pollCanJoinStatus(PollTimes.JoinStatus)	// TODO: Is this really necessary?
+		resolve(PromiseCode.Success)
+	}).catch((error) => {
+		console.log("err...")
+		reject(error)
+	})
+}

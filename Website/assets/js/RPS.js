@@ -8,22 +8,21 @@ window.addEventListener('load', function() {
 	.then(() => {
 		return new Promise(networkSetup)
 	}).then(() => {
-		return Promise.all([new Promise(contractSetup), new Promise(curAccSetup)])
+		return Promise.all([new Promise(contractSetup), new Promise(curAccSetup), new Promise(sessionStorageSetup)])
 		// Complete these setup items asyncronously, but only move on once all are complete
 	}).then(() => {		
-		updateCanCreateMatch()  // On load (typically page refresh), updateCanCreateMatch
-		updateCanJoinMatch()  // On load (typically page refresh), updateCanJoinMatch
-		pollCanJoinStatus(250)  // Start polling
-		pollCanCreateStatus(250)  // Start polling
-
+		return Promise.all([new Promise(canCreateSetup), new Promise(canJoinSetup)])
+		// Complete these setup items asyncronously, but only move on once all are complete
+	})
+	.then(() => {
 		pollRecentBlock(2500)
 		pollRecentCreations(250)
 	})
-	.then(()=>{
+	.then(() => {
 		startApp()
 	})
 	.catch((err) => {
-		errorHandler(err)
+		console.error(errorHandler(err))
 	})
 })
 
@@ -126,7 +125,7 @@ function createMatch(){
         value: web3.utils.toWei(ethAmount, 'ether')  // Solidity Contract is payable with Wei, not ether
       }
 
-      contract.methods.createMatch().send(createMatchOps) // Send createMatch() w/ specified options
+      contract.methods.createMatch().send(createMatchOps)// Send createMatch() w/ specified options
       .on('transactionHash', function(hash){  // When blockchain revieves function request
         canCreateMatch = false  // Player is in the process of creating match. Cannot create another
         console.log("Starting create transaction...")
@@ -145,7 +144,7 @@ function createMatch(){
         })
       })
       .on('error', function(error){
-        console.log("createMatch took too long...")
+      	console.log("createMatch rejected OR took too long")
       })
     }else{
       throw new Error("Invalid Etherium Amount")
