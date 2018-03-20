@@ -46,6 +46,8 @@ const PromiseCode = Object.freeze({
 	UnknownNet: "In unkown network",
 	InvalidTxn: "Invalid transaction hash",
 	InvalidAcc: "Invalid account hash",
+	CreationRejected: "Create match request rejected!",
+	InvalidEth: "Invalid etherium amount!",
 	Failed: "Something went wrong... promise failed"
 });
 

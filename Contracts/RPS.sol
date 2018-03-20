@@ -162,23 +162,23 @@ contract RPS{
 
 	// @notice Gets the number of ongoing RPS Matches created by the caller
 	// @dev This is mostly for laziness on js-side
-	function getNumActiveCreatedMatches() external view activeContract() returns(uint8 numMatches){
+	function getNumActiveCreates() external view activeContract() returns(uint8 numMatches){
 		return playerToNumActiveCreates[msg.sender];
 	}
 
 	// @notice Get the number of ongoing RPS Matches by the created specified address (this includes players waiting for an opponent)
-	function getNumActiveCreatedMatchesFor(address _player) external view activeContract() returns(uint8 numMatches){
+	function getNumActiveCreatesFor(address _player) external view activeContract() returns(uint8 numMatches){
 		return playerToNumActiveCreates[_player];
 	}
 
 	// @notice Gets the number of ongoing RPS Matches joined by the caller
 	// @dev This is mostly for laziness on js-side
-	function getNumActiveJoinedMatches() external view activeContract() returns(uint8 numMatches){
+	function getNumActiveJoines() external view activeContract() returns(uint8 numMatches){
 		return playerToNumActiveJoins[msg.sender];
 	}
 
 	// @notice Get the number of ongoing RPS Matches by the joined specified address
-	function getNumActiveJoinedMatchesFor(address _player) external view activeContract() returns(uint8 numMatches){
+	function getNumActiveJoinesFor(address _player) external view activeContract() returns(uint8 numMatches){
 		return playerToNumActiveJoins[_player];
 	}
 

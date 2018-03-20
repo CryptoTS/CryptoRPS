@@ -17,15 +17,8 @@ window.addEventListener('load', function() {
 	})
 })
 
-// If web3 injection cannot be confirmed
-// Implement timer to retry connecting and startApp()-ing
-function notConnected(){
-  console.log("Not connected")
-}
-
 // Starts app after web3 injection has been confirmed
 function startApp(){
-
 	new Promise(getActiveMatches).then(function(sortedMatches)
 	{
 		for(let i = 0; i < sortedMatches.length; i++){
@@ -71,50 +64,39 @@ function shoot(btn){
 
 // Creates a match on the contract, if the user is allowed to
 function createMatch(){
-  let checkCreation = new Promise(function (resolve, reject){
-    if(!canCreateMatch){
-      reject(Error("Can only have one match at a time"))
-    }
-    resolve($("#ethAmount").val()) // In Eth, need to be converted to Wei
-  })
+	new Promise(canCreate).then(function (canCreate){
+		let ethAmount = $("#ethAmount").val()
+		
+		if(!canCreate){
+			reject(PromiseCode.CreationRejected)
+		}
+		if(ethAmount == 'undefined' || ethAmount <= 0){
+			reject(PromiseCode.InvalidEth)
+		}
+		
+		let createMatchOps = {
+			from: curAcc,
+			value: web3.utils.toWei(ethAmount, 'ether')	// Solidity Contract is payable with Wei, not ether
+		}
 
-  checkCreation
-  .then(function (ethAmount){  // Create rps match on the blockchain
-    if(ethAmount !== 'undefined' && ethAmount > 0){
-      let createMatchOps = {
-        from: curAcc,
-        value: web3.utils.toWei(ethAmount, 'ether')  // Solidity Contract is payable with Wei, not ether
-      }
-
-      contract.methods.createMatch().send(createMatchOps)// Send createMatch() w/ specified options
-      .on('transactionHash', function(hash){  // When blockchain revieves function request
-        canCreateMatch = false  // Player is in the process of creating match. Cannot create another
-        console.log("Starting create transaction...")
-
-        sessionStorage.setItem('createTxnHash', hash)
-        sessionStorage.setItem('createTxnAcc', curAcc)
-
-                        // Hand over the task of determining if the transaction succeeded/failed to pollTxn 
-        pollTxn(hash)  // Poll transaction hash for it's receipt until one is obtained
-        .then(function(result){
-          // console.log(result.receipt)
-
-          if(!result.didSucceed){ // If the receipt failed, allow player to create another match
-            canCreateMatch = true
-          }
-        })
-      })
-      .on('error', function(error){
-      	console.log("createMatch rejected OR took too long")
-      })
-    }else{
-      throw new Error("Invalid Etherium Amount")
-    }
-  }) 
-  .catch(function(err)
-  {
-    console.error(err)
-  })
+		// canCreateMatch = false		// Player is in the process of creating match. Cannot create another	
+		contract.methods.createMatch().send(createMatchOps).on('transactionHash', (hash) => {	// When blockchain revieves function request
+			sessionStorage.setItem('createTxnHash', hash)
+			sessionStorage.setItem('createTxnAcc', curAcc)
+		}).on('receipt', (receipt) => {
+			canCreateMatch = receipt.status != 1	// If the receipt failed, allow player to create another match
+			
+			console.log("RECEIPT!")
+			console.log(receipt)
+		}).on('error', (error) => {
+			canCreateMatch = true
+			console.log("createMatch rejected OR took too long. MSG: ")
+			console.log(error)
+		})
+	}).catch(function(err)
+	{
+		console.error(errorHandler(err))
+	})
 }
 
 // Join a match
