@@ -64,7 +64,7 @@ function shoot(btn){
 
 // Creates a match on the contract, if the user is allowed to
 function createMatch(){
-	new Promise(canCreate).then(function (canCreate){
+	new Promise(canCreate).then((canCreate) => {
 		let ethAmount = $("#ethAmount").val()
 		
 		if(!canCreate){
@@ -79,19 +79,16 @@ function createMatch(){
 			value: web3.utils.toWei(ethAmount, 'ether')	// Solidity Contract is payable with Wei, not ether
 		}
 
-		// canCreateMatch = false		// Player is in the process of creating match. Cannot create another	
+		canCreateMatch = false		// Player is in the process of creating match. Cannot create another	
 		contract.methods.createMatch().send(createMatchOps).on('transactionHash', (hash) => {	// When blockchain revieves function request
 			sessionStorage.setItem('createTxnHash', hash)
 			sessionStorage.setItem('createTxnAcc', curAcc)
 		}).on('receipt', (receipt) => {
 			canCreateMatch = receipt.status != 1	// If the receipt failed, allow player to create another match
-			
-			console.log("RECEIPT!")
-			console.log(receipt)
 		}).on('error', (error) => {
 			canCreateMatch = true
 			console.log("createMatch rejected OR took too long. MSG: ")
-			console.log(error)
+			reject(error)
 		})
 	}).catch(function(err)
 	{
@@ -149,115 +146,112 @@ function joinMatch(btn){
 
 // Appends the html object for a specific match to end of the match list by default, but can specifiy div
 function appendListing(match, divToAppendTo = $('#matchList')){
-  // Get listing data from match
-  let id = match.id
-  let creator = match.creator
-  let opponent = (creator == match.opponent) ? "No Opponent" : match.opponent  // If creator is the opponent, then they're looking for an opponent
-  let wager = web3.utils.fromWei(web3.utils.toBN(match.wager), "ether")  // Convert Wei amount to Ether amount. Easier to understand for user
+	// Get listing data from match
+	let id = match.id
+	let creator = match.creator
+	let opponent = (creator == match.opponent) ? "No Opponent" : match.opponent  // If creator is the opponent, then they're looking for an opponent
+	let wager = web3.utils.fromWei(web3.utils.toBN(match.wager), "ether")  // Convert Wei amount to Ether amount. Easier to understand for user
 
-  // Create listing elements
-  let newMatch = document.createElement('div');
-  let txtDiv = document.createElement('div'); // Text div
-  let btnDiv = document.createElement('div'); // Button div
-  let spcDiv = document.createElement('div'); // Spacer div
+	// Create listing elements
+	let newMatch = document.createElement('div');
+	let txtDiv = document.createElement('div'); // Text div
+	let btnDiv = document.createElement('div'); // Button div
+	let spcDiv = document.createElement('div'); // Spacer div
 
-  txtDiv.id = 'txtDiv'
-  txtDiv.innerHTML =
-    `
-      <span>id: </span>
-      <span id="matchId">${id}</span>
-      <span>Creator: </span>
-      <span id="creAcc">${creator}</span>
-      <span>---</span>
-      <span>Opponent: </span>
-      <span id="oppAcc">${opponent}</span>
-      <span>---</span>
-      <span>Amount: </span>
-      <span id="wager">${wager}</span>
-      <span> Eth</span>
-    `
+	txtDiv.id = 'txtDiv'
+	txtDiv.innerHTML =
+	`
+	<span>id: </span>
+	<span id="matchId">${id}</span>
+	<span>Creator: </span>
+	<span id="creAcc">${creator}</span>
+	<span>---</span>
+	<span>Opponent: </span>
+	<span id="oppAcc">${opponent}</span>
+	<span>---</span>
+	<span>Amount: </span>
+	<span id="wager">${wager}</span>
+	<span> Eth</span>
+	`
 
-  btnDiv.id = 'btnDiv'
-  btnDiv.innerHTML =
-    `
-      <button id="rock" onclick="shoot(this)">Rock</button>
-      <button id="paper" onclick="shoot(this)">Paper</button>
-      <button id="scissor" onclick="shoot(this)">Scissor</button>
-      <button style="margin-left: 60px;" id="joinMatchBtn" onclick="joinMatch(this)">Join</button>
-    `
+	btnDiv.id = 'btnDiv'
+	btnDiv.innerHTML =
+	`
+	<button id="rock" onclick="shoot(this)">Rock</button>
+	<button id="paper" onclick="shoot(this)">Paper</button>
+	<button id="scissor" onclick="shoot(this)">Scissor</button>
+	<button style="margin-left: 60px;" id="joinMatchBtn" onclick="joinMatch(this)">Join</button>
+	`
 
-  spcDiv.id = 'spcDiv'
-  spcDiv.innerHTML =
-    `
-    <br><br>
-    `
+	spcDiv.id = 'spcDiv'
+	spcDiv.innerHTML =
+	`
+	<br><br>
+	`
 
-  newMatch.id = creator
-  newMatch.appendChild(txtDiv);
-  newMatch.appendChild(btnDiv);
-  newMatch.appendChild(spcDiv);
-  divToAppendTo.append(newMatch);
+	newMatch.id = creator
+	newMatch.appendChild(txtDiv);
+	newMatch.appendChild(btnDiv);
+	newMatch.appendChild(spcDiv);
+	divToAppendTo.append(newMatch);
 }
 
 // Inserts the html object for a specific match to the ordered location in the match list
 // Match list is ordered by etherium amount, descending
 function insertListing(match){
-  let prevDiv = $('#matchList').children('div')[0] // Default to TopMatch. Use: if the current top RPSMatch is smaller than this match, append below TopMatch
-  let matchWager = web3.utils.toBN(match.wager) // Convert insert match wager's to a BN
+	let prevDiv = $('#matchList').children('div')[0]	// Default to TopMatch. Use: if the current top RPSMatch is smaller than this match, append below TopMatch
+	let matchWager = web3.utils.toBN(match.wager)		// Convert insert match wager's to a BN
 
-  if($('#matchList').children('div').length == 1){ // If there's JUST TopMatch, then insert this match and end insertion
-    appendListing(match, prevDiv)
-    return
-  }
+	if($('#matchList').children('div').length == 1){	// If there's JUST TopMatch, then insert this match and end insertion
+		appendListing(match, prevDiv)
+		return
+	}
 
-  $('#matchList').children('div') // Get all children divs of the matchList
-  .each(function(){
-    if($(this).attr('id') == 'topMatch'){
-      return true // TopMatch is just a place holder, so skip over it
-    }
-    let curWeiWager = web3.utils.toWei(String($(this).find('#txtDiv').find('#wager').html()), "ether") // Convert displayed ether to BN Wei 
-    curWeiWager = web3.utils.toBN(curWeiWager)  // Convert Wei value to a BN
+	$('#matchList').children('div').each(() => {		// Get all children divs of the matchList
+		if($(this).attr('id') == 'topMatch'){
+			return true									// TopMatch is just a place holder, so skip over it
+		}
+		let curWager = String($(this).find('#txtDiv').find('#wager').html())
+		let curWeiWager = web3.utils.toWei(curWager, "ether")	// Convert displayed ether to BN Wei 
+		curWeiWager = web3.utils.toBN(curWeiWager)		// Convert Wei value to a BN
 
-    if(matchWager.cmp(curWeiWager) < 0){
-      appendListing(match, prevDiv) // Append the listing to the previous div
+		if(matchWager.cmp(curWeiWager) < 0){
+			appendListing(match, prevDiv) // Append the listing to the previous div
 
-      return false // With insertion complete, break out of .each
-    }else{
-      prevDiv = $(this) // Set prevDiv to this Div, and continue on with loop
-    }
-  })
+			return false // With insertion complete, break out of .each
+		}else{
+			prevDiv = $(this) // Set prevDiv to this Div, and continue on with loop
+		}
+	})
 }
 
 /** Event listeners **/
 
 // Events do not fire from js, even though they fire from solidity... Needs to be fixed eventually
 function bindEvents(resolve, reject){
-  console.log("Binding Events...")
+	console.log("Binding Events...")
   
-  contract.events.MatchCreated()  // When MatchCreated event is fired
-  .on('data', function(event){ // On what it returns to me
-    console.log("MatchCreated event fired!")
-    data = event.returnValues
-    matchData = ({  // Recreate the match data given the return values
-      id: data.id,
-      creator: data.creator,
-      opponent: data.opponent,
-      wager: data.wager,
-      outcome: data.outcome
-    })
-    console.log("Instering matchData: ")
-    console.log(matchData)
-    insertListing(matchData)
-  })
-  .on('changed', function(event){
-    console.log("MatchCreated changed")
-    console.log(event)
-  })
-  .on('error', function(error){
-    console.error(error)
-  })
+	contract.events.MatchCreated().on('data', (event) => {	// When MatchCreated event is fired; On what it returns to me
+		console.log("MatchCreated event fired!")
+		data = event.returnValues
+		matchData = ({  // Recreate the match data given the return values
+			id: data.id,
+			creator: data.creator,
+			opponent: data.opponent,
+			wager: data.wager,
+			outcome: data.outcome
+		})
+		console.log("Instering matchData: ")
+		console.log(matchData)
+		insertListing(matchData)
+	}).on('changed', function(event){
+		console.log("MatchCreated changed")
+		console.log(event)
+	}).on('error', function(error){
+		console.error(error)
+	})
 
-  console.log("Events Bound")
-  resolve(true)
+	console.log("Events Bound")
+	resolve(true)
 }
 

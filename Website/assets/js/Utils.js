@@ -168,12 +168,9 @@ function updateCanJoinMatch(){
 	})
 }
 
-// Execute a list of Promise return functions in series
-function pSeries(list) {  
-	var p = Promise.resolve();
-	return list.reduce(function(pacc, fn) {
-		return pacc = pacc.then(fn);
-	}, p);
+// Remove specified element from array and return new array
+function remove(array, element) {
+    return array.filter(e => e !== element);
 }
 
 // Handles errors thrown in RPS promises
