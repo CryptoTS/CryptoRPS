@@ -106,7 +106,7 @@ contract RPS{
 		playerToNumMatches[_match.creator] = playerToNumMatches[_match.creator].add(1);	// Increment number of matches by this player
 		playerToNumActiveCreates[_match.creator] = playerToNumActiveCreates[_match.creator].add(1);	// Increment number of active creates this player has
 
-		emit MatchCreated(_matchId, _match.creator, address(0), _match.wager, 0);	// Emit the MatchCreated event. address(0) is psuedo opponent, 0 is outcome
+		emit MatchCreated(_matchId, _match.creator, _match.opponent, _match.wager, 0);	// Emit the MatchCreated event
 	}
 
 	// @notice Joins an RPS match

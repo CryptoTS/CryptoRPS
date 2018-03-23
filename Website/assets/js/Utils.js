@@ -68,7 +68,7 @@ const creationStatus = function(createTxn, createAcc) {
 // Determines if the current account can create another match
 // Resolves to true if this player can create more matches; false otherwise
 const canCreate = (resolve, reject) => {
-	contract.methods.getNumActiveCreatedMatches().call({from: curAcc}).then((numCreates) => {
+	contract.methods.getNumActiveCreates().call({from: curAcc}).then((numCreates) => {
 		resolve(numCreates < maxCreates)
 	}).catch((error) => {
 		reject(error)
@@ -107,7 +107,7 @@ const joiningStatus = function(joinTxn, joinAcc){
 // Determines if the current account can join another match
 // Resolves to true if this player can join more matches; false otherwise
 const canJoin = (resolve, reject) => {
-	contract.methods.getNumActiveJoinedMatches().call({from: curAcc}).then((numJoins) => {
+	contract.methods.getNumActiveJoines().call({from: curAcc}).then((numJoins) => {
 		resolve(numJoins < maxJoins)
 	}).catch((error) => {
 		reject(error)
@@ -180,14 +180,40 @@ function errorHandler(error){
 			alert("Please move to MainNet")
 			break
 		case PromiseCode.InvalidTxn:
+			console.log("No initial txn")
 			break
 		default:
 			return error
 	}
 }
 
+
+function createEventFactory(events){
+	var newEvents = events.diff(pastEvents)
+
+	console.log("newEvents:")
+	console.log(newEvents)
+
+	for(let i = 0; i < newEvents.length; i++){
+		let eventData = newEvents[i].returnValues
+		matchData = ({  // Recreate the match data given the return values
+			id: eventData.matchId,
+			creator: eventData.creator,
+			opponent: eventData.opponent,
+			wager: eventData.wager,
+			outcome: eventData.outcome
+		})
+
+		insertListing(matchData)
+	}
+}
+
+Array.prototype.diff = function(a) {
+    return this.filter(function(i) {return a.indexOf(i) < 0;});
+};
+
 /******************************************/
-/** POLLING FUNCTION-SET**/
+/** POLLING FUNCTION-SET **/
 
 // Check for MetaMask account change, and reload website if necessary
 function pollAccChange(interval){
@@ -259,9 +285,14 @@ function pollRecentCreations(interval){
 		contract.getPastEvents('MatchCreated', {fromBlock: recentBlock, toBlock:'latest'}, function(error, events){
 			eventString = JSON.stringify(events)
 			pastEventsString = JSON.stringify(pastEvents)
-			if(eventString != pastEventsString){
-				console.log(events);
+			if(events.length > 0 && eventString != pastEventsString){
+				recentBlock = pastEvents[pastEvents.length - 1].blockNumber		// Get most recent event's blockNumber
+				createEventFactory(events)
+				console.log("pastEvents \n events")
+				console.log(pastEvents)
+				console.log(events)
 				pastEvents = events;
+				console.log("\n\n")
 			}
 		})
 	}, interval)

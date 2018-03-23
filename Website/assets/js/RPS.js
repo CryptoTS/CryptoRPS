@@ -64,10 +64,10 @@ function shoot(btn){
 
 // Creates a match on the contract, if the user is allowed to
 function createMatch(){
-	new Promise(canCreate).then((canCreate) => {
+	new Promise(canCreate).then((canCreateBool) => {
 		let ethAmount = $("#ethAmount").val()
 		
-		if(!canCreate){
+		if(!canCreateBool){
 			reject(PromiseCode.CreationRejected)
 		}
 		if(ethAmount == 'undefined' || ethAmount <= 0){
@@ -190,6 +190,8 @@ function appendListing(match, divToAppendTo = $('#matchList')){
 	`
 
 	newMatch.id = creator
+	newMatch.classList.add('match')
+
 	newMatch.appendChild(txtDiv);
 	newMatch.appendChild(btnDiv);
 	newMatch.appendChild(spcDiv);
@@ -207,7 +209,7 @@ function insertListing(match){
 		return
 	}
 
-	$('#matchList').children('div').each(() => {		// Get all children divs of the matchList
+	$('#matchList').children('div').each(function(){		// Get all children divs of the matchList
 		if($(this).attr('id') == 'topMatch'){
 			return true									// TopMatch is just a place holder, so skip over it
 		}
@@ -215,7 +217,7 @@ function insertListing(match){
 		let curWeiWager = web3.utils.toWei(curWager, "ether")	// Convert displayed ether to BN Wei 
 		curWeiWager = web3.utils.toBN(curWeiWager)		// Convert Wei value to a BN
 
-		if(matchWager.cmp(curWeiWager) < 0){
+		if(matchWager.cmp(curWeiWager) > 0){
 			appendListing(match, prevDiv) // Append the listing to the previous div
 
 			return false // With insertion complete, break out of .each

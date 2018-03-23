@@ -14,6 +14,7 @@ PromiseCode:	A dictionary of promise codes that may be resolved/rejected with th
 MoveMap:		A mapping of moves (rps) to numerical values
 maxCreates:		The max number of games a player can create
 maxJoines:		The max number of games a player can join
+zeroAcc:		The zero account. Essentially a grave
 
 web3:			The web3.js container object for interaction with web3.js (using web3 v1.0-beta31)
 contract:		An instance of the solidity contract. Interaction with that contract (on the blockchain) is done through this
@@ -25,10 +26,498 @@ pastEvents:		An object storing events from recentBlock to most recent block
     ******** ******** **/
 
 /** STATIC VARIABLES **/
-const address = "0xCA68f9037fAD4964DEc41eBBD07b7B2F94AeB631"
-const abi = [{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"playerToNumActiveCreates","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"activeMatchCounter","outputs":[{"name":"","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newCap","type":"uint8"}],"name":"setJoinCap","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_matchId","type":"uint256"}],"name":"getMatch","outputs":[{"name":"id","type":"uint256"},{"name":"creator","type":"address"},{"name":"opponent","type":"address"},{"name":"wager","type":"uint256"},{"name":"outcome","type":"int8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_player","type":"address"}],"name":"getNumActiveCreatedMatchesFor","outputs":[{"name":"numMatches","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getActiveMatchIDs","outputs":[{"name":"matchIds","type":"uint256[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"}],"name":"transferOwner","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_matchId","type":"uint256"}],"name":"killMatch","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"createCap","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"}],"name":"transferAdmin","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"contractAdmin","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"_matches","outputs":[{"name":"creator","type":"address"},{"name":"opponent","type":"address"},{"name":"wager","type":"uint256"},{"name":"outcome","type":"int8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_isActive","type":"bool"}],"name":"setContractActive","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"createMatch","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"playerToNumMatches","outputs":[{"name":"","type":"uint32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_player","type":"address"}],"name":"getNumActiveJoinedMatchesFor","outputs":[{"name":"numMatches","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getNumActiveJoinedMatches","outputs":[{"name":"numMatches","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"playerToNumActiveJoins","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getNumActiveCreatedMatches","outputs":[{"name":"numMatches","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"contractOwner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_player","type":"address"}],"name":"getMatchIDsOfAddress","outputs":[{"name":"matchIds","type":"uint256[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newCap","type":"uint8"}],"name":"setCreateCap","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"joinCap","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_matchId","type":"uint256"}],"name":"joinMatch","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"matchId","type":"uint256"},{"indexed":false,"name":"creator","type":"address"},{"indexed":false,"name":"opponent","type":"address"},{"indexed":false,"name":"wager","type":"uint256"},{"indexed":false,"name":"outcome","type":"uint8"}],"name":"MatchCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"matchId","type":"uint256"},{"indexed":false,"name":"opponent","type":"address"}],"name":"MatchJoined","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"matchId","type":"uint256"},{"indexed":false,"name":"creator","type":"address"},{"indexed":false,"name":"creatorRefund","type":"uint256"},{"indexed":false,"name":"opponent","type":"address"},{"indexed":false,"name":"opponentRefuned","type":"uint256"}],"name":"MatchKilled","type":"event"}]
+const address = "0xC46Fa37003d50012BF96D68Aab548D59Be70d3A9"
+const abi = [
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "playerToNumActiveCreates",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_player",
+				"type": "address"
+			}
+		],
+		"name": "getNumActiveJoinesFor",
+		"outputs": [
+			{
+				"name": "numMatches",
+				"type": "uint8"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "activeMatchCounter",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "newCap",
+				"type": "uint8"
+			}
+		],
+		"name": "setJoinCap",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getNumActiveCreates",
+		"outputs": [
+			{
+				"name": "numMatches",
+				"type": "uint8"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_matchId",
+				"type": "uint256"
+			}
+		],
+		"name": "getMatch",
+		"outputs": [
+			{
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"name": "creator",
+				"type": "address"
+			},
+			{
+				"name": "opponent",
+				"type": "address"
+			},
+			{
+				"name": "wager",
+				"type": "uint256"
+			},
+			{
+				"name": "outcome",
+				"type": "int8"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getActiveMatchIDs",
+		"outputs": [
+			{
+				"name": "matchIds",
+				"type": "uint256[]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_to",
+				"type": "address"
+			}
+		],
+		"name": "transferOwner",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_matchId",
+				"type": "uint256"
+			}
+		],
+		"name": "killMatch",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "createCap",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_to",
+				"type": "address"
+			}
+		],
+		"name": "transferAdmin",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "contractAdmin",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_player",
+				"type": "address"
+			}
+		],
+		"name": "getNumActiveCreatesFor",
+		"outputs": [
+			{
+				"name": "numMatches",
+				"type": "uint8"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "_matches",
+		"outputs": [
+			{
+				"name": "creator",
+				"type": "address"
+			},
+			{
+				"name": "opponent",
+				"type": "address"
+			},
+			{
+				"name": "wager",
+				"type": "uint256"
+			},
+			{
+				"name": "outcome",
+				"type": "int8"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getNumActiveJoines",
+		"outputs": [
+			{
+				"name": "numMatches",
+				"type": "uint8"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_isActive",
+				"type": "bool"
+			}
+		],
+		"name": "setContractActive",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "createMatch",
+		"outputs": [],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "playerToNumMatches",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "playerToNumActiveJoins",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "contractOwner",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_player",
+				"type": "address"
+			}
+		],
+		"name": "getMatchIDsOfAddress",
+		"outputs": [
+			{
+				"name": "matchIds",
+				"type": "uint256[]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "newCap",
+				"type": "uint8"
+			}
+		],
+		"name": "setCreateCap",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "joinCap",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_matchId",
+				"type": "uint256"
+			}
+		],
+		"name": "joinMatch",
+		"outputs": [],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "matchId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "creator",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "opponent",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "wager",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "outcome",
+				"type": "uint8"
+			}
+		],
+		"name": "MatchCreated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "matchId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "opponent",
+				"type": "address"
+			}
+		],
+		"name": "MatchJoined",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "matchId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "creator",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "creatorRefund",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "opponent",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "opponentRefuned",
+				"type": "uint256"
+			}
+		],
+		"name": "MatchKilled",
+		"type": "event"
+	}
+]
 const maxCreates = 1
 const maxJoins = 1
+const zeroAcc = "0x0000000000000000000000000000000000000000"
 
 const PollTimes = Object.freeze({
 	AccCheck: 250,
@@ -46,8 +535,9 @@ const PromiseCode = Object.freeze({
 	UnknownNet: "In unkown network",
 	InvalidTxn: "Invalid transaction hash",
 	InvalidAcc: "Invalid account hash",
-	CreationRejected: "Create match request rejected!",
 	InvalidEth: "Invalid etherium amount!",
+	CreationRejected: "Create match request rejected!",
+	NoAccount: "No account detected",
 	Failed: "Something went wrong... promise failed"
 });
 
@@ -64,7 +554,7 @@ let curAcc
 let canCreateMatch
 let canJoinMatch
 let recentBlock
-let pastEvents
+let pastEvents = []
 
 
 /** SETUP FUNCTIONS **/
@@ -120,7 +610,7 @@ const curAccSetup = (resolve, reject) => {
 			pollAccChange(PollTimes.AccCheck)
 			resolve(PromiseCode.Success)
 		}else{
-			reject()	// Fallback to rejecting with web3's error
+			reject(PromiseCode.NoAccount)
 		}
 	}).catch((error) => {
 		reject(error)
@@ -143,7 +633,8 @@ const recentBlockSetup = (resolve, reject) => {
 	web3.eth.getBlockNumber()
 	.then(function (blockNum){
 		recentBlock = blockNum
-		pollRecentBlock(PollTimes.BlockCheck)	// Start polling for block updates
+		// pollRecentBlock(PollTimes.BlockCheck)	// Start polling for block updates
+		// Commented as Poll Recent Creations contains block number associated to creation txn 
 		resolve(PromiseCode.Success)
 	}).catch((error) => {
 		reject(error)
