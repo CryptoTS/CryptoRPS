@@ -286,7 +286,7 @@ function pollRecentCreations(interval){
 			eventString = JSON.stringify(events)
 			pastEventsString = JSON.stringify(pastEvents)
 			if(events.length > 0 && eventString != pastEventsString){
-				recentBlock = pastEvents[pastEvents.length - 1].blockNumber		// Get most recent event's blockNumber
+				recentBlock = events[events.length - 1].blockNumber		// Get most recent event's blockNumber
 				createEventFactory(events)
 				console.log("pastEvents \n events")
 				console.log(pastEvents)

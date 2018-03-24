@@ -68,10 +68,10 @@ function createMatch(){
 		let ethAmount = $("#ethAmount").val()
 		
 		if(!canCreateBool){
-			reject(PromiseCode.CreationRejected)
+			throw PromiseCode.CreationRejected
 		}
 		if(ethAmount == 'undefined' || ethAmount <= 0){
-			reject(PromiseCode.InvalidEth)
+			throw PromiseCode.InvalidEth
 		}
 		
 		let createMatchOps = {
@@ -88,7 +88,7 @@ function createMatch(){
 		}).on('error', (error) => {
 			canCreateMatch = true
 			console.log("createMatch rejected OR took too long. MSG: ")
-			reject(error)
+			throw error
 		})
 	}).catch(function(err)
 	{
