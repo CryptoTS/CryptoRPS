@@ -7,7 +7,7 @@
 		Setting front-end characterstics based on variables
 **/
 
-/** HTML MODIFICATION FUNCTION-SET **/
+/** ** HTML MODIFICATION FUNCTION-SET ** **/
 
 // Disables/enables the "join rps match" button depending on canJoinMatch state
 function toggleJoining(){
@@ -32,9 +32,63 @@ function toggleCreation(){
 	}
 }
 
-/******************************************/
+// Appends the html object for a specific match to end of the match list by default, but can specifiy div
+function appendListing(match, divToAppendTo = $('#matchList')){
+	// Get listing data from match
+	let id = match.id
+	let creator = match.creator
+	let opponent = (creator == match.opponent) ? "No Opponent" : match.opponent  // If creator is the opponent, then they're looking for an opponent
+	let wager = web3.utils.fromWei(web3.utils.toBN(match.wager), "ether")  // Convert Wei amount to Ether amount. Easier to understand for user
 
-/** PROMISE FUNCTION-SET **/
+	// Create listing elements
+	let newMatch = document.createElement('div');
+	let txtDiv = document.createElement('div'); // Text div
+	let btnDiv = document.createElement('div'); // Button div
+	let spcDiv = document.createElement('div'); // Spacer div
+
+	txtDiv.id = 'txtDiv'
+	txtDiv.innerHTML =
+	`
+	<span>id: </span>
+	<span id="matchId">${id}</span>
+	<span>Creator: </span>
+	<span id="creAcc">${creator}</span>
+	<span>---</span>
+	<span>Opponent: </span>
+	<span id="oppAcc">${opponent}</span>
+	<span>---</span>
+	<span>Amount: </span>
+	<span id="wager">${wager}</span>
+	<span> Eth</span>
+	`
+
+	btnDiv.id = 'btnDiv'
+	btnDiv.innerHTML =
+	`
+	<button id="rock" onclick="shoot(this)">Rock</button>
+	<button id="paper" onclick="shoot(this)">Paper</button>
+	<button id="scissor" onclick="shoot(this)">Scissor</button>
+	<button style="margin-left: 60px;" id="joinMatchBtn" onclick="joinMatch(this)">Join</button>
+	`
+
+	spcDiv.id = 'spcDiv'
+	spcDiv.innerHTML =
+	`
+	<br><br>
+	`
+
+	newMatch.id = creator
+	newMatch.classList.add('match')
+
+	newMatch.appendChild(txtDiv);
+	newMatch.appendChild(btnDiv);
+	newMatch.appendChild(spcDiv);
+	divToAppendTo.append(newMatch);
+}
+
+/** -- HTML MODIFICATION FUNCTION-SET -- **/
+
+/** ** PROMISE FUNCTION-SET ** **/
 
 // Determines if a specified create transaction number, associated to a specific account,
 // has been *succesfully* mined on the blockchain
@@ -107,7 +161,7 @@ const joiningStatus = function(joinTxn, joinAcc){
 // Determines if the current account can join another match
 // Resolves to true if this player can join more matches; false otherwise
 const canJoin = (resolve, reject) => {
-	contract.methods.getNumActiveJoines().call({from: curAcc}).then((numJoins) => {
+	contract.methods.getNumActiveJoins().call({from: curAcc}).then((numJoins) => {
 		resolve(numJoins < maxJoins)
 	}).catch((error) => {
 		reject(error)
@@ -136,9 +190,9 @@ const getActiveMatches = (resolve, reject) => {
 	})
 }
 
-/******************************************/
+/** -- PROMISE FUNCTION-SET -- **/
 
-/** GENERAL FUNCTION-SET **/
+/** ** GENERAL FUNCTION-SET ** **/
 
 // Updates this player's ability to create a match
 function updateCanCreateMatch(){
@@ -212,8 +266,8 @@ Array.prototype.diff = function(a) {
     return this.filter(function(i) {return a.indexOf(i) < 0;});
 };
 
-/******************************************/
-/** POLLING FUNCTION-SET **/
+/** -- GENERAL FUNCTION-SET -- **/
+/** ** POLLING FUNCTION-SET ** **/
 
 // Check for MetaMask account change, and reload website if necessary
 function pollAccChange(interval){
@@ -299,9 +353,9 @@ function pollRecentCreations(interval){
 	console.log("Started pollRecentCreations")
 }
 
-/******************************************/
+/** -- POLLING FUNCTION-SET -- **/
+/** ** COMPARATOR FUNCTIONS ** **/
 
-/** COMPARATOR FUNCTIONS **/
 // Compares two matches by their wager amounts. Uses BN.js to safeguard 
 // Defaults ordering in descending order (highest to lowest)
 function _compareByEthDesc(matchA, matchB){
@@ -314,4 +368,36 @@ function _compareByEthAsc(matchA, matchB){
   return web3.utils.toBN(matchA.wager).cmp(web3.utils.toBN(matchB.wager));
 }
 
-/******************************************/
+/** -- COMPARATOR FUNCTIONS -- **/
+
+/** ** EVENT LISTENERS ** **/
+
+// Events do not fire from js, even though they fire from solidity... Needs to be fixed eventually
+function bindCreateEvent(resolve, reject){
+	console.log("Binding Events...")
+  
+	contract.events.MatchCreated().on('data', (event) => {	// When MatchCreated event is fired; On what it returns to me
+		console.log("MatchCreated event fired!")
+		data = event.returnValues
+		matchData = ({  // Recreate the match data given the return values
+			id: data.id,
+			creator: data.creator,
+			opponent: data.opponent,
+			wager: data.wager,
+			outcome: data.outcome
+		})
+		console.log("Instering matchData: ")
+		console.log(matchData)
+		insertListing(matchData)
+	}).on('changed', function(event){
+		console.log("MatchCreated changed")
+		console.log(event)
+	}).on('error', function(error){
+		console.error(error)
+	})
+
+	console.log("Events Bound")
+	resolve(true)
+}
+
+/** -- EVENT LISTENERS -- **/

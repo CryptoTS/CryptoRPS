@@ -12,8 +12,6 @@ abi:			Application Binary Interface of that contract (a massive json defining co
 PollTimes:		A dictionary of poll time specifications for polling
 PromiseCode:	A dictionary of promise codes that may be resolved/rejected with through promises 
 MoveMap:		A mapping of moves (rps) to numerical values
-maxCreates:		The max number of games a player can create
-maxJoines:		The max number of games a player can join
 zeroAcc:		The zero account. Essentially a grave
 
 web3:			The web3.js container object for interaction with web3.js (using web3 v1.0-beta31)
@@ -22,11 +20,13 @@ curAcc:			The current MetaMask account being used
 canCreateMatch:	Boolean to check if the player can create a match
 canJoinMatch:	Boolean to check if the player can join a match
 recentBlock:	A periodically updated block number. Transactions start being searched from this block
+maxCreates:		The max number of games a player can create
+maxJoins:		The max number of games a player can join
 pastEvents:		An object storing events from recentBlock to most recent block
-    ******** ******** **/
+**/
 
 /** STATIC VARIABLES **/
-const address = "0xC46Fa37003d50012BF96D68Aab548D59Be70d3A9"
+const address = "0x5cC3773278288DD49235b5A71C2F24dA5e081Fe9"
 const abi = [
 	{
 		"constant": true,
@@ -40,25 +40,6 @@ const abi = [
 		"outputs": [
 			{
 				"name": "",
-				"type": "uint8"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "_player",
-				"type": "address"
-			}
-		],
-		"name": "getNumActiveJoinesFor",
-		"outputs": [
-			{
-				"name": "numMatches",
 				"type": "uint8"
 			}
 		],
@@ -248,6 +229,20 @@ const abi = [
 	},
 	{
 		"constant": true,
+		"inputs": [],
+		"name": "getNumActiveJoins",
+		"outputs": [
+			{
+				"name": "numMatches",
+				"type": "uint8"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
 		"inputs": [
 			{
 				"name": "",
@@ -271,20 +266,6 @@ const abi = [
 			{
 				"name": "outcome",
 				"type": "int8"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "getNumActiveJoines",
-		"outputs": [
-			{
-				"name": "numMatches",
-				"type": "uint8"
 			}
 		],
 		"payable": false,
@@ -327,6 +308,25 @@ const abi = [
 			{
 				"name": "",
 				"type": "uint32"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_player",
+				"type": "address"
+			}
+		],
+		"name": "getNumActiveJoinsFor",
+		"outputs": [
+			{
+				"name": "numMatches",
+				"type": "uint8"
 			}
 		],
 		"payable": false,
@@ -515,8 +515,6 @@ const abi = [
 		"type": "event"
 	}
 ]
-const maxCreates = 1
-const maxJoins = 1
 const zeroAcc = "0x0000000000000000000000000000000000000000"
 
 const PollTimes = Object.freeze({
@@ -524,7 +522,7 @@ const PollTimes = Object.freeze({
 	CreateStatus: 250,
 	JoinStatus: 250,
 	BlockCheck: 2500,
-	CreationCheck: 500
+	CreationCheck: 1500
 });
 
 const PromiseCode = Object.freeze({
@@ -537,7 +535,10 @@ const PromiseCode = Object.freeze({
 	InvalidAcc: "Invalid account hash",
 	InvalidEth: "Invalid etherium amount!",
 	CreationRejected: "Create match request rejected!",
+	JoinRejected: "Join match request rejected!",
 	NoAccount: "No account detected",
+	MaxCreatesError: "Couldn't get max allowed creates from contract",
+	MaxJoinsError: "Couldn't get max allowed joins from contract",
 	Failed: "Something went wrong... promise failed"
 });
 
@@ -554,6 +555,8 @@ let curAcc
 let canCreateMatch
 let canJoinMatch
 let recentBlock
+let maxCreates
+let maxJoins
 let pastEvents = []
 
 
@@ -676,3 +679,24 @@ const canJoinSetup = (resolve, reject) => {
 	})
 }
 
+// Gets the max allowed creates per player, according to contract
+const maxCreatesSetup = (resolve, reject) => {
+	contract.methods.createCap().call({from: curAcc}).then((createCap) => {
+		maxCreates = createCap
+		resolve(PromiseCode.Success)
+	}).catch((error) => {
+		maxCreates = 1	// Default to 1 creates
+		reject(PromiseCode.MaxCreatesError)
+	})
+}
+
+// Gets the max allowed joins per player, according to contract
+const maxJoinsSetup = (resolve, reject) => {
+	contract.methods.joinCap().call({from: curAcc}).then((joinCap) => {
+		maxJoins = joinCap
+		resolve(PromiseCode.Success)
+	}).catch((error) => {
+		maxJoins = 1	// Default to 1 joins
+		reject(PromiseCode.MaxJoinsError)
+	})
+}

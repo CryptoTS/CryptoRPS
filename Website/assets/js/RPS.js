@@ -6,7 +6,8 @@ window.addEventListener('load', function() {
 			new Promise(sessionStorageSetup), new Promise(recentBlockSetup)])
 		// Complete these setup items asyncronously, but only move on once all are complete
 	}).then(() => {		
-		return Promise.all([new Promise(canCreateSetup), new Promise(canJoinSetup)])
+		return Promise.all([new Promise(canCreateSetup), new Promise(canJoinSetup)],
+			new Promise(maxCreatesSetup), new Promise(maxJoinsSetup))
 		// Complete these setup items asyncronously, but only move on once all are complete
 	}).then(() => {
 		pollRecentCreations(PollTimes.CreationCheck)
@@ -25,7 +26,7 @@ function startApp(){
 			appendListing(sortedMatches[i])
 		}
 	}).then(() => {
-		new Promise(bindEvents)
+		new Promise(bindCreateEvent)
 	}).catch(function(err){
 		console.error(errorHandler(err))
 	})
@@ -65,11 +66,12 @@ function shoot(btn){
 // Creates a match on the contract, if the user is allowed to
 function createMatch(){
 	new Promise(canCreate).then((canCreateBool) => {
-		let ethAmount = $("#ethAmount").val()
-		
+		let ethAmount = $("#ethAmount").val()	
+
 		if(!canCreateBool){
 			throw PromiseCode.CreationRejected
 		}
+
 		if(ethAmount == 'undefined' || ethAmount <= 0){
 			throw PromiseCode.InvalidEth
 		}
@@ -90,112 +92,44 @@ function createMatch(){
 			console.log("createMatch rejected OR took too long. MSG: ")
 			throw error
 		})
-	}).catch(function(err)
-	{
-		console.error(errorHandler(err))
+	}).catch((error) => {
+		console.error(errorHandler(error))
 	})
 }
 
-// Join a match
+// Joins a match on the contract, if the user is allowed to
 function joinMatch(btn){
-  let matchDiv = $(btn).parent().parent() // Match div is this button's parents' parent 
-  let creatorAdr = matchDiv.attr('id')  // Creator address is the id of the match div
-  let matchWager = web3.utils.toWei(String(matchDiv.find('#txtDiv').find('#wager').html()), "ether") // Get match wager (which is in Eth) and convert to Wei
-  let matchId = matchDiv.find('#txtDiv').find('#matchId').html()
+	new Promise(canJoin).then((canJoinBool) => {
+		let matchDiv = $(btn).parent().parent() // Match div is this button's parents' parent 
+		let creatorAdr = matchDiv.attr('id')  // Creator address is the id of the match div
+		let matchWager = web3.utils.toWei(String(matchDiv.find('#txtDiv').find('#wager').html()), "ether") // Get match wager (which is in Eth) and convert to Wei
+		let matchId = matchDiv.find('#txtDiv').find('#matchId').html()
 
-  let checkJoining = new Promise(function (resolve, reject){
-    if(!canJoinMatch){
-      reject(Error("Can only join one match at a time"))
-    }else if(curAcc == creatorAdr){
-      reject(Error("Cannot join your own match"))
-    }
-    resolve()
-  })
+		if(!canJoinBool || curAcc == creatorAdr){
+			throw PromiseCode.JoinRejected
+		}
 
-  checkJoining
-  .then(function(){
-    console.log("Joining match " + matchId + " which has wei wager " + matchWager)
-    let joinMatchOps = ({
-      from: curAcc,
-      value: matchWager // Joining a match requires you match the match's wager
-    })
+		console.log("Joining match " + matchId + " which has wei wager " + matchWager)
+		let joinMatchOps = ({
+			from: curAcc,
+			value: matchWager // Joining a match requires you match the match's wager
+		})
 
-    contract.methods.joinMatch(matchId).send(joinMatchOps)  // Send joinMatch(matchId) w/ specified options
-    .on('transactionHash', function(hash){
-      canJoinMatch = false  // Player is in the process of creating match. Cannot create another
-      // console.log("Starting join transaction...")
-
-      sessionStorage.setItem('joinTxnHash', hash)
-      sessionStorage.setItem('joinTxnAcc', curAcc)
-
-                      // Hand over the task of determining if the transaction succeeded/failed to pollTxn 
-      pollTxn(hash)  // Poll transaction hash for it's receipt until one is obtained
-      .then(function(result){
-        // console.log(result.receipt)
-
-        if(!result.didSucceed){ // If the receipt failed, allow player to create another match
-          canJoinMatch = true
-        }
-      })
-    })
-    .on('error', function(error){
-      console.log("joinMatch took too long...")
-    })
-  })
-}
-
-// Appends the html object for a specific match to end of the match list by default, but can specifiy div
-function appendListing(match, divToAppendTo = $('#matchList')){
-	// Get listing data from match
-	let id = match.id
-	let creator = match.creator
-	let opponent = (creator == match.opponent) ? "No Opponent" : match.opponent  // If creator is the opponent, then they're looking for an opponent
-	let wager = web3.utils.fromWei(web3.utils.toBN(match.wager), "ether")  // Convert Wei amount to Ether amount. Easier to understand for user
-
-	// Create listing elements
-	let newMatch = document.createElement('div');
-	let txtDiv = document.createElement('div'); // Text div
-	let btnDiv = document.createElement('div'); // Button div
-	let spcDiv = document.createElement('div'); // Spacer div
-
-	txtDiv.id = 'txtDiv'
-	txtDiv.innerHTML =
-	`
-	<span>id: </span>
-	<span id="matchId">${id}</span>
-	<span>Creator: </span>
-	<span id="creAcc">${creator}</span>
-	<span>---</span>
-	<span>Opponent: </span>
-	<span id="oppAcc">${opponent}</span>
-	<span>---</span>
-	<span>Amount: </span>
-	<span id="wager">${wager}</span>
-	<span> Eth</span>
-	`
-
-	btnDiv.id = 'btnDiv'
-	btnDiv.innerHTML =
-	`
-	<button id="rock" onclick="shoot(this)">Rock</button>
-	<button id="paper" onclick="shoot(this)">Paper</button>
-	<button id="scissor" onclick="shoot(this)">Scissor</button>
-	<button style="margin-left: 60px;" id="joinMatchBtn" onclick="joinMatch(this)">Join</button>
-	`
-
-	spcDiv.id = 'spcDiv'
-	spcDiv.innerHTML =
-	`
-	<br><br>
-	`
-
-	newMatch.id = creator
-	newMatch.classList.add('match')
-
-	newMatch.appendChild(txtDiv);
-	newMatch.appendChild(btnDiv);
-	newMatch.appendChild(spcDiv);
-	divToAppendTo.append(newMatch);
+		canJoinMatch = false  // Player is in the process of joining match. Cannot join another
+		contract.methods.joinMatch(matchId).send(joinMatchOps).on('transactionHash', function(hash){	// When blockchain recieves function request
+			console.log("stored items")
+			sessionStorage.setItem('joinTxnHash', hash)
+			sessionStorage.setItem('joinTxnAcc', curAcc)
+		}).on('receipt', (receipt) => {
+			canJoinMatch = receipt.status != 1
+		}).on('error', function(error){
+			canJoinMatch = true
+			console.log("joinMatch rejected OR took too long. MSG: ")
+			throw error
+		})
+	}).catch((error) => {
+		console.error(errorHandler(error))
+	})
 }
 
 // Inserts the html object for a specific match to the ordered location in the match list
@@ -226,34 +160,3 @@ function insertListing(match){
 		}
 	})
 }
-
-/** Event listeners **/
-
-// Events do not fire from js, even though they fire from solidity... Needs to be fixed eventually
-function bindEvents(resolve, reject){
-	console.log("Binding Events...")
-  
-	contract.events.MatchCreated().on('data', (event) => {	// When MatchCreated event is fired; On what it returns to me
-		console.log("MatchCreated event fired!")
-		data = event.returnValues
-		matchData = ({  // Recreate the match data given the return values
-			id: data.id,
-			creator: data.creator,
-			opponent: data.opponent,
-			wager: data.wager,
-			outcome: data.outcome
-		})
-		console.log("Instering matchData: ")
-		console.log(matchData)
-		insertListing(matchData)
-	}).on('changed', function(event){
-		console.log("MatchCreated changed")
-		console.log(event)
-	}).on('error', function(error){
-		console.error(error)
-	})
-
-	console.log("Events Bound")
-	resolve(true)
-}
-
