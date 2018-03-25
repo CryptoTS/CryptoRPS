@@ -5,9 +5,10 @@ window.addEventListener('load', function() {
 		return Promise.all([new Promise(contractSetup), new Promise(curAccSetup),
 			new Promise(sessionStorageSetup), new Promise(recentBlockSetup)])
 		// Complete these setup items asyncronously, but only move on once all are complete
+	}).then(() => {
+		return Promise.all([new Promise(maxCreatesSetup), new Promise(maxJoinsSetup)])
 	}).then(() => {		
-		return Promise.all([new Promise(canCreateSetup), new Promise(canJoinSetup)],
-			new Promise(maxCreatesSetup), new Promise(maxJoinsSetup))
+		return Promise.all([new Promise(canCreateSetup), new Promise(canJoinSetup)])
 		// Complete these setup items asyncronously, but only move on once all are complete
 	}).then(() => {
 		pollRecentCreations(PollTimes.CreationCheck)
@@ -72,7 +73,7 @@ function createMatch(){
 			throw PromiseCode.CreationRejected
 		}
 
-		if(ethAmount === 'undefined' || ethAmount <== 0){
+		if(ethAmount === 'undefined' || ethAmount <= 0){
 			throw PromiseCode.InvalidEth
 		}
 		
@@ -81,10 +82,11 @@ function createMatch(){
 			value: web3.utils.toWei(ethAmount, 'ether')	// Solidity Contract is payable with Wei, not ether
 		}
 
-		canCreateMatch = false		// Player is in the process of creating match. Cannot create another	
+		canCreateMatch = false		// Player is in the process of creating match. Cannot create another
+		sessionStorage.setItem('createTxnAcc', curAcc)	
 		contract.methods.createMatch().send(createMatchOps).on('transactionHash', (hash) => {	// When blockchain revieves function request
+			console.log("Stored createTxnHash")
 			sessionStorage.setItem('createTxnHash', hash)
-			sessionStorage.setItem('createTxnAcc', curAcc)
 		}).on('receipt', (receipt) => {
 			canCreateMatch = receipt.status !== 1	// If the receipt failed, allow player to create another match
 		}).on('error', (error) => {
@@ -116,10 +118,10 @@ function joinMatch(btn){
 		})
 
 		canJoinMatch = false  // Player is in the process of joining match. Cannot join another
+		sessionStorage.setItem('joinTxnAcc', curAcc)
 		contract.methods.joinMatch(matchId).send(joinMatchOps).on('transactionHash', function(hash){	// When blockchain recieves function request
-			console.log("stored items")
+			console.log("Stored joinTxnHash")
 			sessionStorage.setItem('joinTxnHash', hash)
-			sessionStorage.setItem('joinTxnAcc', curAcc)
 		}).on('receipt', (receipt) => {
 			canJoinMatch = receipt.status !== 1
 		}).on('error', function(error){

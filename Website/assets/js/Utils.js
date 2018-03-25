@@ -11,6 +11,7 @@
 
 // Disables/enables the "join rps match" button depending on canJoinMatch state
 function toggleJoining(){
+	// console.log("toggle joining...")
 	$('*[id=joinMatchBtn]').each(function(){ // For each match btn
 		matchDiv = $(this).parent().parent()
 		creatorId = matchDiv.attr('id')
@@ -18,6 +19,9 @@ function toggleJoining(){
 
 		if(canJoinMatch === false || curAcc === creatorId || opponentId !== creatorId){
 		// If I cannot join match OR this account is the creator OR someone is playing against the creator
+			// console.log(canJoinMatch === false)
+			// console.log(curAcc === creatorId)
+			// console.log(opponentId !== creatorId)
 			$(this).prop('disabled', true)  // Disable joining this match
 		}else{
 			$(this).prop('disabled', false) // Enable joining this match
@@ -99,7 +103,7 @@ const creationStatus = function(createTxn, createAcc) {
 	return new Promise((resolve, reject) => {
 		if(createTxn === null)	reject(PromiseCode.InvalidTxn)
 		if(createAcc === null)	reject(PromiseCode.InvalidAcc)
-		if(createTxn === 0 || createAcc === 0)	resolve(true)
+		if(createTxn === "0" || createAcc === "0")	resolve(true)
 
 		web3.eth.getTransactionReceipt(createTxn).then((receipt) => {
 			if(receipt === null && createAcc === curAcc){
@@ -138,7 +142,7 @@ const joiningStatus = function(joinTxn, joinAcc){
 	return new Promise((resolve, reject) => {
 		if(joinTxn === null)	reject(PromiseCode.InvalidTxn)
 		if(joinAcc === null)	reject(PromiseCode.InvalidAcc)
-		if(joinTxn === 0 || joinAcc === 0)	resolve(true)
+		if(joinTxn === "0" || joinAcc === "0")	resolve(true)
 
 		web3.eth.getTransactionReceipt(joinTxn).then((receipt) => {
 			if(receipt === null && joinAcc === curAcc){
@@ -164,6 +168,10 @@ const joiningStatus = function(joinTxn, joinAcc){
 // Resolves to true if this player can join more matches; false otherwise
 const canJoin = (resolve, reject) => {
 	contract.methods.getNumActiveJoins().call({from: curAcc}).then((numJoins) => {
+		console.log("numJoins")
+		console.log(numJoins)
+		console.log("maxJoins")
+		console.log(maxJoins)
 		resolve(numJoins < maxJoins)
 	}).catch((error) => {
 		reject(error)
@@ -229,6 +237,7 @@ function remove(array, element) {
 }
 
 // Handles errors thrown in RPS promises
+// TODO: Potentialy remove this in favor of direct error handling
 function errorHandler(error){
 	switch (error){
 		case PromiseCode.UnknownNet:
@@ -244,13 +253,8 @@ function errorHandler(error){
 
 
 function createEventFactory(events){
-	var newEvents = events.diff(pastEvents)
-
-	console.log("newEvents:")
-	console.log(newEvents)
-
-	for(let i = 0; i < newEvents.length; i++){
-		let eventData = newEvents[i].returnValues
+	for(let i = 0; i < events.length; i++){
+		let eventData = events[i].returnValues
 		matchData = ({  // Recreate the match data given the return values
 			id: eventData.matchId,
 			creator: eventData.creator,
@@ -341,13 +345,22 @@ function pollRecentCreations(interval){
 			eventString = JSON.stringify(events)
 			pastEventsString = JSON.stringify(pastEvents)
 			if(events.length > 0 && eventString !== pastEventsString){
-				recentBlock = events[events.length - 1].blockNumber		// Get most recent event's blockNumber
-				createEventFactory(events)
-				console.log("pastEvents \n events")
+				let newEvents = events.diff(pastEvents)
+
+				console.log("pre-pastEvents")
 				console.log(pastEvents)
+				console.log("events")
 				console.log(events)
-				pastEvents = events;
-				console.log("\n\n")
+				console.log("newEvents")
+				console.log(newEvents)
+
+				recentBlock = events[events.length - 1].blockNumber		// Get most recent event's blockNumber
+				createEventFactory(newEvents)
+				pastEvents = newEvents;
+
+				console.log("post-pastEvents")
+				console.log(pastEvents)
+				console.log("\n")
 			}
 		})
 	}, interval)

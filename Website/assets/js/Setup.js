@@ -666,11 +666,12 @@ const canCreateSetup = (resolve, reject) => {
 const canJoinSetup = (resolve, reject) => {
 	let joinTxn = sessionStorage.getItem('joinTxnHash')
 	let joinAcc = sessionStorage.getItem('joinTxnAcc')
-	console.log("Starting...")
 
 	joiningStatus(joinTxn, joinAcc).then(() => {
 		return new Promise(canJoin)
 	}).then((canJoinResult) => {
+		console.log("canJoinResult from canJoinSetup = ")
+		console.log(canJoinResult)
 		canJoinMatch = canJoinResult
 		pollCanJoinStatus(PollTimes.JoinStatus)	// TODO: Is this really necessary?
 		resolve(PromiseCode.Success)
