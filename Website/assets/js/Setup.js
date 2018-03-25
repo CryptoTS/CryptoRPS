@@ -596,7 +596,7 @@ const networkSetup = (resolve, reject) => {
 const contractSetup = (resolve, reject) => {
 	contract = new web3.eth.Contract(abi, address)	// Obtain contract with specified abi and address
 
-	if(contract != null){
+	if(contract !== null){
 		console.log("contract setup complete")
 		resolve(PromiseCode.Success)
 	}else{
@@ -608,7 +608,7 @@ const curAccSetup = (resolve, reject) => {
 	web3.eth.getAccounts().then((accounts) => {
 		curAcc = accounts[0]
 	}).then(() => {
-		if(curAcc != null){
+		if(curAcc !== null){
 			console.log("curAcc setup complete")
 			pollAccChange(PollTimes.AccCheck)
 			resolve(PromiseCode.Success)

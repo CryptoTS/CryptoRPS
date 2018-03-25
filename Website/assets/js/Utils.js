@@ -16,7 +16,7 @@ function toggleJoining(){
 		creatorId = matchDiv.attr('id')
 		opponentId = matchDiv.find('#oppAcc').attr('val')
 
-		if(canJoinMatch == false || curAcc == creatorId || opponentId !== creatorId){
+		if(canJoinMatch === false || curAcc === creatorId || opponentId !== creatorId){
 		// If I cannot join match OR this account is the creator OR someone is playing against the creator
 			$(this).prop('disabled', true)  // Disable joining this match
 		}else{
@@ -27,7 +27,7 @@ function toggleJoining(){
 
 // Disables/enables the "create rps match" button depending on canCreateMatch state
 function toggleCreation(){
-	if(canCreateMatch == true){ // If can create matchs
+	if(canCreateMatch === true){ // If can create matchs
 		$('#createMatchBtn').prop('disabled', false)  // Enable create match button
 	}else{
 		$('#createMatchBtn').prop('disabled', true) // Disable create match button
@@ -98,22 +98,22 @@ function appendListing(match, divToAppendTo = $('#matchList')){
 // True if transaction has been mined succesfully; false otherwise
 const creationStatus = function(createTxn, createAcc) {
 	return new Promise((resolve, reject) => {
-		if(createTxn == null)	reject(PromiseCode.InvalidTxn)
-		if(createAcc == null)	reject(PromiseCode.InvalidAcc)
-		if(createTxn == 0 || createAcc == 0)	resolve(true)
+		if(createTxn === null)	reject(PromiseCode.InvalidTxn)
+		if(createAcc === null)	reject(PromiseCode.InvalidAcc)
+		if(createTxn === 0 || createAcc === 0)	resolve(true)
 
 		web3.eth.getTransactionReceipt(createTxn).then((receipt) => {
-			if(receipt == null && createAcc == curAcc){
-			// Checking receipt == null checks if transaction is still pending
-			// Check createAcc == curAcc checks if the account associated to that transaction is the current account (would be false if 1 player switched accounts)
+			if(receipt === null && createAcc === curAcc){
+			// Checking receipt === null checks if transaction is still pending
+			// Check createAcc === curAcc checks if the account associated to that transaction is the current account (would be false if 1 player switched accounts)
 				pollTxn(createTxn).then((creation) => {
 					resolve(creation.didSucceed)
 				})
 			}else{
-				if(createAcc != curAcc){
+				if(createAcc !== curAcc){
 					resolve(false)
 				}else{
-					resolve(receipt.status == 1)	// true if success
+					resolve(receipt.status === 1)	// true if success
 				}
 			}
 		}).catch((error) => {
@@ -137,20 +137,20 @@ const canCreate = (resolve, reject) => {
 // True if transaction has been mined succesfully; false otherwise
 const joiningStatus = function(joinTxn, joinAcc){
 	return new Promise((resolve, reject) => {
-		if(joinTxn == null)	reject(PromiseCode.InvalidTxn)
-		if(joinAcc == null)	reject(PromiseCode.InvalidAcc)
-		if(joinTxn == 0 || joinAcc == 0)	resolve(true)
+		if(joinTxn === null)	reject(PromiseCode.InvalidTxn)
+		if(joinAcc === null)	reject(PromiseCode.InvalidAcc)
+		if(joinTxn === 0 || joinAcc === 0)	resolve(true)
 
 		web3.eth.getTransactionReceipt(joinTxn).then((receipt) => {
-			if(receipt == null && joinAcc == curAcc){
+			if(receipt === null && joinAcc === curAcc){
 				pollTxn(joinTxn).then((result) => {
 					resolve(result.didSucceed)
 				})
 			}else{
-				if(createAcc != curAcc){
+				if(createAcc !== curAcc){
 					resolve(false)
 				}else{
-					resolve(receipt.status == 1)
+					resolve(receipt.status === 1)
 				}
 			}
 		}).catch((error) => {
@@ -276,7 +276,7 @@ Array.prototype.diff = function(a) {
 function pollAccChange(interval){
 	setInterval(() => {
 		web3.eth.getAccounts().then(function(accounts){
-			if(curAcc != accounts[0]){
+			if(curAcc !== accounts[0]){
 				curAcc = accounts[0]
 				location.reload()
 			}
@@ -292,11 +292,11 @@ function pollTxn(txnHash, interval){
 		const pollTxnInterval = setInterval(function(){		// Check for transcation receipt every <interal> ms
 			web3.eth.getTransactionReceipt(txnHash)			// Get transaction receipt with web3
 			.then(function(txnObj){
-				if(txnObj != null){							// If the receipt is null, then it is still being mined (ie. pending)
+				if(txnObj !== null){							// If the receipt is null, then it is still being mined (ie. pending)
 					clearInterval(pollTxnInterval)			// Once it's finished being mined, stop interval-ing
 
 					let result = ({							// Create result
-						didSucceed: txnObj.status == 1,		// If txn receipt succeeded
+						didSucceed: txnObj.status === 1,		// If txn receipt succeeded
 						receipt: txnObj						// The receipt itself, for good measure
 					})
 
@@ -342,7 +342,7 @@ function pollRecentCreations(interval){
 		contract.getPastEvents('MatchCreated', {fromBlock: recentBlock, toBlock:'latest'}, function(error, events){
 			eventString = JSON.stringify(events)
 			pastEventsString = JSON.stringify(pastEvents)
-			if(events.length > 0 && eventString != pastEventsString){
+			if(events.length > 0 && eventString !== pastEventsString){
 				recentBlock = events[events.length - 1].blockNumber		// Get most recent event's blockNumber
 				createEventFactory(events)
 				console.log("pastEvents \n events")

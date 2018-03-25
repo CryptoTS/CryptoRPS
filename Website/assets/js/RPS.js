@@ -49,7 +49,7 @@ function shoot(btn){
   .then(function()
   {
     // Make sure the person joining this match is NOT person who owns this match
-    if(player == opponent){
+    if(player === opponent){
       throw new Error("Cannot play against yourself!")
     }
 
@@ -72,7 +72,7 @@ function createMatch(){
 			throw PromiseCode.CreationRejected
 		}
 
-		if(ethAmount == 'undefined' || ethAmount <= 0){
+		if(ethAmount === 'undefined' || ethAmount <== 0){
 			throw PromiseCode.InvalidEth
 		}
 		
@@ -86,7 +86,7 @@ function createMatch(){
 			sessionStorage.setItem('createTxnHash', hash)
 			sessionStorage.setItem('createTxnAcc', curAcc)
 		}).on('receipt', (receipt) => {
-			canCreateMatch = receipt.status != 1	// If the receipt failed, allow player to create another match
+			canCreateMatch = receipt.status !== 1	// If the receipt failed, allow player to create another match
 		}).on('error', (error) => {
 			canCreateMatch = true
 			console.log("createMatch rejected OR took too long. MSG: ")
@@ -105,14 +105,14 @@ function joinMatch(btn){
 		let matchWager = String(matchDiv.find('#txtDiv').find('#wager').attr('val')) // Get match wager (which is in Eth) and convert to Wei
 		let matchId = matchDiv.find('#txtDiv').find('#matchId').attr('val')
 
-		if(!canJoinBool || curAcc == creatorAdr){
+		if(!canJoinBool || curAcc === creatorAdr){
 			throw PromiseCode.JoinRejected
 		}
 
 		console.log("Joining match " + matchId + " which has wei wager " + matchWager)
 		let joinMatchOps = ({
 			from: curAcc,
-			value: matchWager // Joining a match requires you match the match's wager
+			value: matchWager	// Joining a match requires you match the match's wager
 		})
 
 		canJoinMatch = false  // Player is in the process of joining match. Cannot join another
@@ -121,7 +121,7 @@ function joinMatch(btn){
 			sessionStorage.setItem('joinTxnHash', hash)
 			sessionStorage.setItem('joinTxnAcc', curAcc)
 		}).on('receipt', (receipt) => {
-			canJoinMatch = receipt.status != 1
+			canJoinMatch = receipt.status !== 1
 		}).on('error', function(error){
 			canJoinMatch = true
 			console.log("joinMatch rejected OR took too long. MSG: ")
@@ -138,13 +138,13 @@ function insertListing(match){
 	let prevDiv = $('#matchList').children('div')[0]	// Default to TopMatch. Use: if the current top RPSMatch is smaller than this match, append below TopMatch
 	let matchWager = web3.utils.toBN(match.wager)		// Convert insert match wager's to a BN
 
-	if($('#matchList').children('div').length == 1){	// If there's JUST TopMatch, then insert this match and end insertion
+	if($('#matchList').children('div').length === 1){	// If there's JUST TopMatch, then insert this match and end insertion
 		appendListing(match, prevDiv)
 		return
 	}
 
 	$('#matchList').children('div').each(function(){		// Get all children divs of the matchList
-		if($(this).attr('id') == 'topMatch'){
+		if($(this).attr('id') === 'topMatch'){
 			return true									// TopMatch is just a place holder, so skip over it
 		}
 		let curWeiWager = String($(this).find('#txtDiv').find('#wager').attr('val'))
