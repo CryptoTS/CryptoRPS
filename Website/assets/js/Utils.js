@@ -168,10 +168,6 @@ const joiningStatus = function(joinTxn, joinAcc){
 // Resolves to true if this player can join more matches; false otherwise
 const canJoin = (resolve, reject) => {
 	contract.methods.getNumActiveJoins().call({from: curAcc}).then((numJoins) => {
-		console.log("numJoins")
-		console.log(numJoins)
-		console.log("maxJoins")
-		console.log(maxJoins)
 		resolve(numJoins < maxJoins)
 	}).catch((error) => {
 		reject(error)
