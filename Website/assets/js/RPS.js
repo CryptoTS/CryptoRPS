@@ -102,8 +102,8 @@ function joinMatch(btn){
 	new Promise(canJoin).then((canJoinBool) => {
 		let matchDiv = $(btn).parent().parent() // Match div is this button's parents' parent 
 		let creatorAdr = matchDiv.attr('id')  // Creator address is the id of the match div
-		let matchWager = web3.utils.toWei(String(matchDiv.find('#txtDiv').find('#wager').html()), "ether") // Get match wager (which is in Eth) and convert to Wei
-		let matchId = matchDiv.find('#txtDiv').find('#matchId').html()
+		let matchWager = String(matchDiv.find('#txtDiv').find('#wager').attr('val')) // Get match wager (which is in Eth) and convert to Wei
+		let matchId = matchDiv.find('#txtDiv').find('#matchId').attr('val')
 
 		if(!canJoinBool || curAcc == creatorAdr){
 			throw PromiseCode.JoinRejected
@@ -147,8 +147,7 @@ function insertListing(match){
 		if($(this).attr('id') == 'topMatch'){
 			return true									// TopMatch is just a place holder, so skip over it
 		}
-		let curWager = String($(this).find('#txtDiv').find('#wager').html())
-		let curWeiWager = web3.utils.toWei(curWager, "ether")	// Convert displayed ether to BN Wei 
+		let curWeiWager = String($(this).find('#txtDiv').find('#wager').attr('val'))
 		curWeiWager = web3.utils.toBN(curWeiWager)		// Convert Wei value to a BN
 
 		if(matchWager.cmp(curWeiWager) > 0){

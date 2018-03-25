@@ -14,8 +14,10 @@ function toggleJoining(){
 	$('*[id=joinMatchBtn]').each(function(){ // For each match btn
 		matchDiv = $(this).parent().parent()
 		creatorId = matchDiv.attr('id')
+		opponentId = matchDiv.find('#oppAcc').attr('val')
 
-		if(canJoinMatch == false || curAcc == creatorId){ // If I cannot join match OR this account is the creator
+		if(canJoinMatch == false || curAcc == creatorId || opponentId !== creatorId){
+		// If I cannot join match OR this account is the creator OR someone is playing against the creator
 			$(this).prop('disabled', true)  // Disable joining this match
 		}else{
 			$(this).prop('disabled', false) // Enable joining this match
@@ -36,9 +38,10 @@ function toggleCreation(){
 function appendListing(match, divToAppendTo = $('#matchList')){
 	// Get listing data from match
 	let id = match.id
+	let joinDisabler = match.creator !== match.opponent ? "disabled" : ""
 	let creator = match.creator
-	let opponent = (creator == match.opponent) ? "No Opponent" : match.opponent  // If creator is the opponent, then they're looking for an opponent
-	let wager = web3.utils.fromWei(web3.utils.toBN(match.wager), "ether")  // Convert Wei amount to Ether amount. Easier to understand for user
+	let opponent = (creator === match.opponent) ? "No Opponent" : match.opponent	// If creator is the opponent, then they're looking for an opponent
+	let wager = web3.utils.fromWei(web3.utils.toBN(match.wager), "ether")	// Convert Wei amount to Ether amount. Easier to understand for user
 
 	// Create listing elements
 	let newMatch = document.createElement('div');
@@ -50,15 +53,15 @@ function appendListing(match, divToAppendTo = $('#matchList')){
 	txtDiv.innerHTML =
 	`
 	<span>id: </span>
-	<span id="matchId">${id}</span>
+	<span id="matchId" val="${match.id}">${id}</span>
 	<span>Creator: </span>
-	<span id="creAcc">${creator}</span>
+	<span id="creAcc" val="${match.creator}">${creator}</span>
 	<span>---</span>
 	<span>Opponent: </span>
-	<span id="oppAcc">${opponent}</span>
+	<span id="oppAcc" val="${match.opponent}">${opponent}</span>
 	<span>---</span>
 	<span>Amount: </span>
-	<span id="wager">${wager}</span>
+	<span id="wager" val="${match.wager}">${wager}</span>
 	<span> Eth</span>
 	`
 
@@ -68,7 +71,7 @@ function appendListing(match, divToAppendTo = $('#matchList')){
 	<button id="rock" onclick="shoot(this)">Rock</button>
 	<button id="paper" onclick="shoot(this)">Paper</button>
 	<button id="scissor" onclick="shoot(this)">Scissor</button>
-	<button style="margin-left: 60px;" id="joinMatchBtn" onclick="joinMatch(this)">Join</button>
+	<button style="margin-left: 60px;" id="joinMatchBtn" onclick="joinMatch(this)" ${joinDisabler}>Join</button>
 	`
 
 	spcDiv.id = 'spcDiv'
