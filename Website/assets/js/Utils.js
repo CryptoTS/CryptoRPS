@@ -360,15 +360,25 @@ function pollRecentCreations(interval){
 /** ** COMPARATOR FUNCTIONS ** **/
 
 // Compares two matches by their wager amounts. Uses BN.js to safeguard 
-// Defaults ordering in descending order (highest to lowest)
+// Defaults ordering in descending order (highest to lowest). If wagers
+// Are the same, fallback to id-number
 function _compareByEthDesc(matchA, matchB){
-  return web3.utils.toBN(matchA.wager).cmp(web3.utils.toBN(matchB.wager)) * -1;
+	let cmpVal = web3.utils.toBN(matchA.wager).cmp(web3.utils.toBN(matchB.wager))
+	if (cmpVal === 0){
+		cmpVal = matchA.id - matchB.id
+	}
+	return cmpVal * -1
 }
 
 // Compares two matches by their wager amounts. Uses BN.js to safeguard 
-// Defaults ordering in ascending order (lowest to highest)
+// Defaults ordering in ascending order (lowest to highest). If wagers
+// Are the same, fallback to id-number
 function _compareByEthAsc(matchA, matchB){
-  return web3.utils.toBN(matchA.wager).cmp(web3.utils.toBN(matchB.wager));
+	let cmpVal = web3.utils.toBN(matchA.wager).cmp(web3.utils.toBN(matchB.wager))
+	if (cmpVal === 0){
+		cmpVal = matchA.id - matchB.id
+	}
+	return cmpVal
 }
 
 /** -- COMPARATOR FUNCTIONS -- **/
