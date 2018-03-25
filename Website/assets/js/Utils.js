@@ -90,7 +90,6 @@ function appendListing(match, divToAppendTo = $('#matchList')){
 }
 
 /** -- HTML MODIFICATION FUNCTION-SET -- **/
-
 /** ** PROMISE FUNCTION-SET ** **/
 
 // Determines if a specified create transaction number, associated to a specific account,
@@ -194,7 +193,6 @@ const getActiveMatches = (resolve, reject) => {
 }
 
 /** -- PROMISE FUNCTION-SET -- **/
-
 /** ** GENERAL FUNCTION-SET ** **/
 
 // Updates this player's ability to create a match
@@ -382,18 +380,17 @@ function _compareByEthAsc(matchA, matchB){
 }
 
 /** -- COMPARATOR FUNCTIONS -- **/
-
 /** ** EVENT LISTENERS ** **/
 
 // Events do not fire from js, even though they fire from solidity... Needs to be fixed eventually
 function bindCreateEvent(resolve, reject){
-	console.log("Binding Events...")
+	console.log("Binding create event...")
   
 	contract.events.MatchCreated().on('data', (event) => {	// When MatchCreated event is fired; On what it returns to me
 		console.log("MatchCreated event fired!")
 		data = event.returnValues
 		matchData = ({  // Recreate the match data given the return values
-			id: data.id,
+			id: data.matchId,
 			creator: data.creator,
 			opponent: data.opponent,
 			wager: data.wager,
@@ -409,7 +406,31 @@ function bindCreateEvent(resolve, reject){
 		console.error(error)
 	})
 
-	console.log("Events Bound")
+	console.log("Create Event Bound")
+	resolve(true)
+}
+
+// Events do not fire from js, even though they fire from solidity... Needs to be fixed eventually
+function bindJoinEvent(resolve, reject){
+	console.log("Binding join event...")
+  
+	contract.events.MatchJoined().on('data', (event) => {	// When MatchJoined event is fired; On what it returns to me
+		console.log("MatchJoined event fired!")
+		data = event.returnValues
+		joinData = ({  // Recreate the join data given the return values
+			id: data.matchId,
+			opponent: data.opponent
+		})
+		console.log("Obtained joinData: ")
+		console.log(joinData)
+	}).on('changed', function(event){
+		console.log("MatchJoined changed")
+		console.log(event)
+	}).on('error', function(error){
+		console.error(error)
+	})
+
+	console.log("Join Event Bound")
 	resolve(true)
 }
 
