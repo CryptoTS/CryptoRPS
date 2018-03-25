@@ -173,12 +173,12 @@ contract RPS{
 
 	// @notice Gets the number of ongoing RPS Matches joined by the caller
 	// @dev This is mostly for laziness on js-side
-	function getNumActiveJoines() external view activeContract() returns(uint8 numMatches){
+	function getNumActiveJoins() external view activeContract() returns(uint8 numMatches){
 		return playerToNumActiveJoins[msg.sender];
 	}
 
 	// @notice Get the number of ongoing RPS Matches by the joined specified address
-	function getNumActiveJoinesFor(address _player) external view activeContract() returns(uint8 numMatches){
+	function getNumActiveJoinsFor(address _player) external view activeContract() returns(uint8 numMatches){
 		return playerToNumActiveJoins[_player];
 	}
 
