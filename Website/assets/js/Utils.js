@@ -39,10 +39,10 @@ function toggleCreation(){
 }
 
 // Appends the html object for a specific match to end of the match list by default, but can specifiy div
-function appendListing(match, divToAppendTo = $('#matchList')){
+function appendListing(match, divToAppendTo = $('#topMatch')){
 	// Get listing data from match
 	let id = match.id
-	let joinDisabler = match.creator !== match.opponent ? "disabled" : ""
+	let joinDisabler = match.creator !== match.opponent || match.creator === curAcc ? "disabled" : ""
 	let creator = match.creator
 	let opponent = (creator === match.opponent) ? "No Opponent" : match.opponent	// If creator is the opponent, then they're looking for an opponent
 	let wager = web3.utils.fromWei(web3.utils.toBN(match.wager), "ether")	// Convert Wei amount to Ether amount. Easier to understand for user
@@ -57,7 +57,7 @@ function appendListing(match, divToAppendTo = $('#matchList')){
 	txtDiv.innerHTML =
 	`
 	<span>id: </span>
-	<span id="matchId" val="${match.id}">${id}</span>
+	<span id="matchId" val=${match.id}>${id}</span>
 	<span>Creator: </span>
 	<span id="creAcc" val="${match.creator}">${creator}</span>
 	<span>---</span>
@@ -65,7 +65,7 @@ function appendListing(match, divToAppendTo = $('#matchList')){
 	<span id="oppAcc" val="${match.opponent}">${opponent}</span>
 	<span>---</span>
 	<span>Amount: </span>
-	<span id="wager" val="${match.wager}">${wager}</span>
+	<span id="wager" val=${match.wager}>${wager}</span>
 	<span> Eth</span>
 	`
 
@@ -87,10 +87,10 @@ function appendListing(match, divToAppendTo = $('#matchList')){
 	newMatch.id = creator
 	newMatch.classList.add('match')
 
-	newMatch.appendChild(txtDiv);
-	newMatch.appendChild(btnDiv);
-	newMatch.appendChild(spcDiv);
-	divToAppendTo.append(newMatch);
+	newMatch.appendChild(txtDiv)
+	newMatch.appendChild(btnDiv)
+	newMatch.appendChild(spcDiv)
+	$(newMatch).insertAfter(divToAppendTo)	// Insert newMatch AFTER the divToAppendTo
 }
 
 /** -- HTML MODIFICATION FUNCTION-SET -- **/
@@ -251,6 +251,7 @@ function errorHandler(error){
 function createEventFactory(events){
 	for(let i = 0; i < events.length; i++){
 		let eventData = events[i].returnValues
+		console.log("*** Factory - Creating event w/ ID: " + eventData.matchId)
 		matchData = ({  // Recreate the match data given the return values
 			id: eventData.matchId,
 			creator: eventData.creator,
@@ -262,10 +263,6 @@ function createEventFactory(events){
 		insertListing(matchData)
 	}
 }
-
-Array.prototype.diff = function(a) {
-    return this.filter(function(i) {return a.indexOf(i) < 0;});
-};
 
 /** -- GENERAL FUNCTION-SET -- **/
 /** ** POLLING FUNCTION-SET ** **/
@@ -341,18 +338,18 @@ function pollRecentCreations(interval){
 			eventString = JSON.stringify(events)
 			pastEventsString = JSON.stringify(pastEvents)
 			if(events.length > 0 && eventString !== pastEventsString){
-				let newEvents = events.diff(pastEvents)
+				let onlyInEvents = events.filter(matchArrayFilter(pastEvents))	// From the two array, get items that only appear in events
 
 				console.log("pre-pastEvents")
 				console.log(pastEvents)
-				console.log("events")
+				console.log("typeof events == " + typeof events)
 				console.log(events)
-				console.log("newEvents")
-				console.log(newEvents)
+				console.log("onlyInEvents")
+				console.log(onlyInEvents)
 
-				recentBlock = events[events.length - 1].blockNumber		// Get most recent event's blockNumber
-				createEventFactory(newEvents)
-				pastEvents = newEvents;
+				recentBlock = events[events.length - 1].blockNumber + 1		// Get most recent event's blockNumber, increment by one to not double count
+				createEventFactory(onlyInEvents)
+				pastEvents = onlyInEvents;
 
 				console.log("post-pastEvents")
 				console.log(pastEvents)
@@ -369,8 +366,9 @@ function pollRecentCreations(interval){
 // Compares two matches by their wager amounts. Uses BN.js to safeguard 
 // Defaults ordering in descending order (highest to lowest). If wagers
 // Are the same, fallback to id-number
-function _compareByEthDesc(matchA, matchB){
+function _compareByEthAsc(matchA, matchB){
 	let cmpVal = web3.utils.toBN(matchA.wager).cmp(web3.utils.toBN(matchB.wager))
+	console.log(cmpVal)
 	if (cmpVal === 0){
 		cmpVal = matchA.id - matchB.id
 	}
@@ -380,7 +378,7 @@ function _compareByEthDesc(matchA, matchB){
 // Compares two matches by their wager amounts. Uses BN.js to safeguard 
 // Defaults ordering in ascending order (lowest to highest). If wagers
 // Are the same, fallback to id-number
-function _compareByEthAsc(matchA, matchB){
+function _compareByEthDesc(matchA, matchB){
 	let cmpVal = web3.utils.toBN(matchA.wager).cmp(web3.utils.toBN(matchB.wager))
 	if (cmpVal === 0){
 		cmpVal = matchA.id - matchB.id
@@ -389,6 +387,17 @@ function _compareByEthAsc(matchA, matchB){
 }
 
 /** -- COMPARATOR FUNCTIONS -- **/
+/** ** FILTER FUNCTIONS ** **/
+
+function matchArrayFilter(otherArray){
+	return function(current){
+		return otherArray.filter(function(other){
+			return other.returnValues.matchId == current.returnValues.matchId
+		}).length == 0;
+	}
+}
+
+/** -- FILTER FUNCTIONS -- **/
 /** ** EVENT LISTENERS ** **/
 
 // Events do not fire from js, even though they fire from solidity... Needs to be fixed eventually

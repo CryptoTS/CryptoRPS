@@ -670,8 +670,6 @@ const canJoinSetup = (resolve, reject) => {
 	joiningStatus(joinTxn, joinAcc).then(() => {
 		return new Promise(canJoin)
 	}).then((canJoinResult) => {
-		console.log("canJoinResult from canJoinSetup = ")
-		console.log(canJoinResult)
 		canJoinMatch = canJoinResult
 		pollCanJoinStatus(PollTimes.JoinStatus)	// TODO: Is this really necessary?
 		resolve(PromiseCode.Success)

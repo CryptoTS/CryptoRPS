@@ -139,24 +139,40 @@ function joinMatch(btn){
 function insertListing(match){
 	let prevDiv = $('#matchList').children('div')[0]	// Default to TopMatch. Use: if the current top RPSMatch is smaller than this match, append below TopMatch
 	let matchWager = web3.utils.toBN(match.wager)		// Convert insert match wager's to a BN
+	let counter = 0
 
 	if($('#matchList').children('div').length === 1){	// If there's JUST TopMatch, then insert this match and end insertion
+		console.log("Kill it with fire")
 		appendListing(match, prevDiv)
 		return
 	}
 
 	$('#matchList').children('div').each(function(){		// Get all children divs of the matchList
+		console.log("On id === " + $(this).attr('id'))
 		if($(this).attr('id') === 'topMatch'){
+			counter++
 			return true									// TopMatch is just a place holder, so skip over it
 		}
-		let curWeiWager = String($(this).find('#txtDiv').find('#wager').attr('val'))
-		curWeiWager = web3.utils.toBN(curWeiWager)		// Convert Wei value to a BN
+		else if($(this).attr('id') === 'botMatch'){	// If at bottom, this match must be the smallest match
+			appendListing(match, prevDiv)
+			return false
+		}
+		let curWager = String($(this).find('#txtDiv').find('#wager').attr('val'))
+		let curWeiWager = web3.utils.toBN(curWager)		// Convert Wei value to a BN
+
+		let psuedoMatch = {wager: curWager, matchId: $(this).find('#txtDiv').find('#matchId').attr('val')}
+
+		console.log("match cmp psuedoMatch == " + _compareByEthDesc(match, psuedoMatch))
 
 		if(matchWager.cmp(curWeiWager) > 0){
+			console.log("Appending to ")
+			console.log(prevDiv)
 			appendListing(match, prevDiv) // Append the listing to the previous div
 
 			return false // With insertion complete, break out of .each
-		}else{
+		}
+		else{
+			counter++
 			prevDiv = $(this) // Set prevDiv to this Div, and continue on with loop
 		}
 	})
