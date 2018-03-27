@@ -370,7 +370,7 @@ function _compareByEthAsc(matchA, matchB){
 	let cmpVal = web3.utils.toBN(matchA.wager).cmp(web3.utils.toBN(matchB.wager))
 	console.log(cmpVal)
 	if (cmpVal === 0){
-		cmpVal = matchA.id - matchB.id
+		cmpVal =  matchA.id - matchB.id
 	}
 	return cmpVal * -1
 }
@@ -381,7 +381,7 @@ function _compareByEthAsc(matchA, matchB){
 function _compareByEthDesc(matchA, matchB){
 	let cmpVal = web3.utils.toBN(matchA.wager).cmp(web3.utils.toBN(matchB.wager))
 	if (cmpVal === 0){
-		cmpVal = matchA.id - matchB.id
+		cmpVal = matchB.id - matchA.id		// Swap order so that most recent transactions appear first
 	}
 	return cmpVal
 }
