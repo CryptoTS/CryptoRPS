@@ -635,7 +635,7 @@ const sessionStorageSetup = (resolve, reject) => {
 const recentBlockSetup = (resolve, reject) => {
 	web3.eth.getBlockNumber()
 	.then(function (blockNum){
-		recentBlock = blockNum
+		recentBlock = blockNum + 1
 		// pollRecentBlock(PollTimes.BlockCheck)	// Start polling for block updates
 		// Commented as Poll Recent Creations contains block number associated to creation txn 
 		resolve(PromiseCode.Success)
