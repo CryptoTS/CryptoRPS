@@ -88,7 +88,7 @@ function createMatch(){
 			console.log("Stored createTxnHash")
 			sessionStorage.setItem('createTxnHash', hash)
 		}).on('receipt', (receipt) => {
-			canCreateMatch = receipt.status !== 1	// If the receipt failed, allow player to create another match
+			canCreateMatch = receipt.status !== "1"	// If the receipt failed, allow player to create another match
 		}).on('error', (error) => {
 			canCreateMatch = true
 			console.log("createMatch rejected OR took too long. MSG: ")
@@ -123,7 +123,8 @@ function joinMatch(btn){
 			console.log("Stored joinTxnHash")
 			sessionStorage.setItem('joinTxnHash', hash)
 		}).on('receipt', (receipt) => {
-			canJoinMatch = receipt.status !== 1
+			canJoinMatch = receipt.status !== "1"
+			alert("Match Started")
 		}).on('error', function(error){
 			canJoinMatch = true
 			console.log("joinMatch rejected OR took too long. MSG: ")
