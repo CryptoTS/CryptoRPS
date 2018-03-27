@@ -2,16 +2,22 @@
 <html lang="en">
 
 <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Our RPS Site</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/main.css">
-    <link href="assets/css/css.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="assets/bagImages/favicon.ico" sizes="32x32">
-    <link rel="icon" type="image/png" href="assets/bagImages/favicon.ico" sizes="16x16">
+    <link rel="icon" type="image/png" href="assets/images/favicon.ico" sizes="32x32">
+    <link rel="icon" type="image/png" href="assets/images/favicon.ico" sizes="16x16">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- Bootstrap core CSS -->
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material Design Bootstrap -->
+    <link href="assets/css/mdb.min.css" rel="stylesheet">
+    <!-- Custom styles -->
+    <link href="assets/css/style.css" rel="stylesheet">
+
     <style>
         li {
             font-family: Impact, Charcoal, sans-serif;
@@ -25,7 +31,7 @@
 </head>
 
 <body>
-    <div class="container" background:="" transparent;="">
+    <div class="container">
         <header>
             <nav class="navbar navbar-light navbar-fixed-top" style="background-color: #C0C0C0;">
                 <div class="container-fluid">
@@ -53,6 +59,18 @@
             </b>
         </h1>
         <div>
+            <!-- The Modal -->
+            <div class="modal fade" id="matchModal" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                 <h4 class="modal-title" id="myModalLabel">Score Goes Here</h4>
+                            </div>
+                            <div class="modal-body">
+                                
+                            </div>
+                        </div>
+            </div>
+
             <div align="right">
                 <div>
                     <input id="ethAmount" type="number" step="0.25" value="0">
@@ -99,7 +117,17 @@
             <p></p>
         </footer>
         <script src="assets/js/web3-beta.31.min.js"></script>
-        <script src="assets/js/jquery-3.3.1.min.js"></script>
+
+        <!-- SCRIPTS -->
+        <!-- JQuery -->
+        <script type="text/javascript" src="assets/js/jquery-3.2.1.min.js"></script>
+        <!-- Bootstrap tooltips -->
+        <script type="text/javascript" src="assets/js/popper.min.js"></script>
+        <!-- Bootstrap core JavaScript -->
+        <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
+        <!-- MDB core JavaScript -->
+        <script type="text/javascript" src="assets/js/mdb.min.js"></script>
+        
         <script src="assets/js/Setup.js"></script>
         <script src="assets/js/Utils.js"></script>
         <script src="assets/js/RPS.js"></script>

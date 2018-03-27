@@ -124,7 +124,7 @@ function joinMatch(btn){
 			sessionStorage.setItem('joinTxnHash', hash)
 		}).on('receipt', (receipt) => {
 			canJoinMatch = receipt.status !== "1"
-			alert("Match Started")
+			$("#matchModal").modal("show")	// Activative game-play modal
 		}).on('error', function(error){
 			canJoinMatch = true
 			console.log("joinMatch rejected OR took too long. MSG: ")
