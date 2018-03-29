@@ -111,6 +111,37 @@ function progress(timeTotal, $element) {
 	}, 100)
 };
 
+
+// Moves the hand up and down
+const moveHand = function (handElem) {
+	return new Promise((resolve, reject) => {
+		let pos = 0;
+		let upId = setInterval(upMove, 15)
+		let downId = null
+		function upMove(){
+			if(pos === -30){
+				clearInterval(upId)
+				downId = setInterval(downMove, 15)
+			}
+			else{
+				pos -= 2;
+				handElem.style.top = pos + 'px'
+			}
+		}
+		function downMove(){
+			if(pos === 0){
+				clearInterval(downId)
+				console.log("Resolved!")
+				resolve(PromiseCode.Success)
+			}
+			else{
+				pos += 2;
+				handElem.style.top = pos + 'px'
+			}
+		}
+	})
+}
+
 /** -- HTML MODIFICATION FUNCTION-SET -- **/
 /** ** PROMISE FUNCTION-SET ** **/
 
