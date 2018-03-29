@@ -100,7 +100,7 @@ function progress(timeTotal, $element) {
 	let timeLeft = timeTotal
 	timerUpdate = setInterval(() => {
 			var progressBarWidth = timeLeft * $element.width() / timeTotal
-			$element.find("#textOverlay").html(timeLeft.toFixed(2) + " seconds")
+			$element.find("#textOverlay").html(timeLeft.toFixed(1) + " seconds")
 			$element.find("#bar").animate({ width: progressBarWidth }, timeLeft == timeTotal ? 0 : 100, 'linear')
 			timeLeft -= 0.1
 

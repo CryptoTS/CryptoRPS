@@ -19,8 +19,8 @@
 }
 
 .modal-title {
-	height: 100%; 
-	width:100%;
+	height: 100%;
+	width: 100%;
 	display:flex;
 	align-items: center;
 	justify-content: center;
@@ -41,12 +41,12 @@
 	/*position: center;*/
     vertical-align:top;
 	padding-bottom: 10px;
-	height: 80%;
+	height: 75%;
 	border: 2px solid blue;
 }
 
 .rpsOutcomes > .player{
-	border: 2px solid green;
+	padding: 2.5rem;
 	height: 100%;
 	width:100%;
 	display:flex;
@@ -71,7 +71,7 @@
 .rpsOptions {
 	/*border: 2px solid grey;*/
 	padding-top: 10px;
-	height: 20%;
+	height: 25%;
 }
 
 /* Rock Paper Scissor option formatting */
