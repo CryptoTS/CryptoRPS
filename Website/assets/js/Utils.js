@@ -93,6 +93,24 @@ function appendListing(match, divToAppendTo = $('#topMatch')){
 	$(newMatch).insertAfter(divToAppendTo)	// Insert newMatch AFTER the divToAppendTo
 }
 
+// Create it here to it can be stopped outside of this function
+let timerUpdate = null
+// Progress bar for playing a move
+function progress(timeTotal, $element) {
+	let timeLeft = timeTotal
+	timerUpdate = setInterval(() => {
+			var progressBarWidth = timeLeft * $element.width() / timeTotal
+			$element.find("#textOverlay").html(timeLeft.toFixed(2) + " seconds")
+			$element.find("#bar").animate({ width: progressBarWidth }, timeLeft == timeTotal ? 0 : 100, 'linear')
+			timeLeft -= 0.1
+
+		if(timeLeft < 0) {
+			$("#matchModal").modal("hide")	// After timer ends, hide the modal (FOR NOW ~ need to implement losing the round/ending game)
+			clearInterval(timerUpdate)
+		}
+	}, 100)
+};
+
 /** -- HTML MODIFICATION FUNCTION-SET -- **/
 /** ** PROMISE FUNCTION-SET ** **/
 

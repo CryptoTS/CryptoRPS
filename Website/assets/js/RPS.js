@@ -35,33 +35,13 @@ function startApp(){
 
 // Fired when rock/paper/scissor is played (ie, 'Rock, Paper, Scissor... Shoot!')
 function shoot(btn){
-  web3.accounts(function(accountsError, accounts)
-  {
-    // Obtain player's account from ethjs
-    if(accountsError){
-      return
-    }
+	let move = btn.id;
+	let player = curAcc;
+	let matchId = $("#matchModal").find("#matchId").val();
 
-    console.log(accounts)
+	// Then contact backend which move has been made by which player
+	console.log(player + " played " + move + "(" + MoveMap[move] + ") for match " + matchId + "!")
 
-    player = accounts[0]
-    move = btn.id
-  })
-  .then(function()
-  {
-    // Make sure the person joining this match is NOT person who owns this match
-    if(player === opponent){
-      throw new Error("Cannot play against yourself!")
-    }
-
-    // Then contact backend which move has been made by which player
-    console.log(player + " played " + move + "(" + MoveMap[move] + ") against " + opponent + "!")
-  })
-  .catch(function(err)
-  {
-    // If error occurs, catch it
-    console.error(err)
-  })
 }
 
 // Creates a match on the contract, if the user is allowed to
@@ -124,7 +104,9 @@ function joinMatch(btn){
 			sessionStorage.setItem('joinTxnHash', hash)
 		}).on('receipt', (receipt) => {
 			canJoinMatch = receipt.status !== "1"
+			$("#matchModal").find("#matchId").val(String(matchId));
 			$("#matchModal").modal("show")	// Activative game-play modal
+			progress(matchTimer, $("#progressBar"))
 		}).on('error', function(error){
 			canJoinMatch = true
 			console.log("joinMatch rejected OR took too long. MSG: ")
