@@ -131,7 +131,6 @@ const moveHand = function (handElem) {
 		function downMove(){
 			if(pos === 0){
 				clearInterval(downId)
-				console.log("Resolved!")
 				resolve(PromiseCode.Success)
 			}
 			else{
@@ -140,6 +139,23 @@ const moveHand = function (handElem) {
 			}
 		}
 	})
+}
+
+
+// Sets the specified hand elemnt to the specified move from MoveMap
+const setHand = function(handElem, move){
+	let handImg = $(handElem).find('img')[0]
+	switch(MoveMap[move]){
+		case 0:
+			handImg.src = "assets/images/RockReady.png"
+			break
+		case 1:
+			handImg.src = "assets/images/Paper.png"
+			break
+		case 2:
+			handImg.src = "assets/images/Paper.png"
+			break
+	}
 }
 
 /** -- HTML MODIFICATION FUNCTION-SET -- **/
