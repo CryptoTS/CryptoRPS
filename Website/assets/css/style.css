@@ -14,17 +14,32 @@
     height:100%;
 }
 
+.modal-header{
+	height: 12.5%;
+}
+
+.modal-title {
+	height: 100%; 
+	width:100%;
+	display:flex;
+	align-items: center;
+	justify-content: center;
+}
+
 .modal-body{
+	height: 75%;
 	text-align: center;
 }
 
 .modal-footer{
+	height: 12.5%;
 	text-align: center;
 }
 
 /* Where game animations are played */
 .rpsOutcomes {
-	position: center;
+	/*position: center;*/
+    vertical-align:top;
 	padding-bottom: 10px;
 	height: 80%;
 	border: 2px solid blue;
@@ -32,10 +47,14 @@
 
 .rpsOutcomes > .player{
 	border: 2px solid green;
+	height: 100%;
+	width:100%;
+	display:flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .creator{
-
 }
 
 /* Flips opponent images horizontally */
@@ -102,7 +121,7 @@ img[class] {
   height: 100%;
   text-align: right;
   padding: 0 10px;
-  line-height: 30; /* same as #progressBar height if we want text middle aligned */
+  line-height: 30px; /* same as #progressBar height if we want text middle aligned */
   width: 0;
   background-color: #CBEA00;
   box-sizing: border-box;
