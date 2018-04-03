@@ -190,6 +190,9 @@ function testShoot(strBtn){
 	setHand(cHand, "rock")	// Have both hands reset to rock imgs before moving
 	setHand(oHand, "rock")
 
+	$("#opponentScore").removeClass("shakeItem")
+	$("#creatorScore").removeClass("shakeItem")
+
 	Promise.all([
 		moveHand(cHand).then(() => moveHand(cHand)).then(() => moveHand(cHand))
 		.then(() => setHand(cHand, psuedoMove)),
@@ -204,12 +207,15 @@ function testShoot(strBtn){
 		if(winner === 0){
 			creatorScore++
 			$("#creatorScore").html(creatorScore)
+			$("#creatorScore").addClass("shakeItem")
 		}else if (winner === 1){
 			opponentScore++
 			$("#opponentScore").html(opponentScore)
+			$("#opponentScore").addClass("shakeItem")
 		}
 
-		if(creatorScore + opponentScore >= bestOf){	// Best of 3
+		if(creatorScore === Math.floor(bestOf / 2 + 1)
+			|| opponentScore === Math.floor(bestOf / 2 + 1)){	// Best of 3
 			$("#progressBar").hide()
 			let victor = "#creatorAccHid"	// Assume the victor was the creator
 
