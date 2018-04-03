@@ -164,11 +164,14 @@ function insertListing(match){
 
 
 function testJoin(){
-	let opAcc = "0x0AE15B183572D..."
+	let creatorAcc = "0x0AE15B183572D..."
 	let matchId = -1
-	$("#matchModal").find("#matchId").val(String(matchId));
-	$("#matchModal").find("#creatorAcc").html(String(curAcc).substring(0, 7).toUpperCase());
-	$("#matchModal").find("#opponentAcc").html(String(opAcc).substring(0, 7).toUpperCase());
+	$("#matchModal").find("#matchId").html(String(matchId));
+	$("#matchModal").find("#creatorAcc").html("0x" + String(creatorAcc).substring(2, 7).toUpperCase());
+	$("#matchModal").find("#creatorAccHid").html(String(creatorAcc));
+
+	$("#matchModal").find("#opponentAcc").html("0x" + String(curAcc).substring(2, 7).toUpperCase());
+	$("#matchModal").find("#opponentAccHid").html(String(curAcc));
 
 	$("#matchModal").modal("show")	// Activative game-play modal
 	progress(matchTimer, $("#progressBar"))
@@ -182,23 +185,45 @@ function testShoot(strBtn){
 	let cHand = $("#matchModal").find("#creatorHand")[0]
 	let oHand = $("#matchModal").find("#opponentHand")[0]
 
-	stopProgress()
+	stopProgress()	// Stops timer so players can animate their moves
 	
 	setHand(cHand, "rock")	// Have both hands reset to rock imgs before moving
 	setHand(oHand, "rock")
 
 	Promise.all([
 		moveHand(cHand).then(() => moveHand(cHand)).then(() => moveHand(cHand))
-		.then(() => setHand(cHand, strBtn)),
+		.then(() => setHand(cHand, psuedoMove)),
 		moveHand(oHand).then(() => moveHand(oHand)).then(() => moveHand(oHand))
-		.then(() => setHand(oHand, psuedoMove))
+		.then(() => setHand(oHand, strBtn))
 	]).then(() => {
 		let winner = getWinner()
+
+		let creatorScore = parseInt($("#creatorScore").html())
+		let opponentScore = parseInt($("#opponentScore").html())
+
 		if(winner === 0){
-			$("#creatorScore").html(parseInt($("#creatorScore").html()) + 1)
+			creatorScore++
+			$("#creatorScore").html(creatorScore)
 		}else if (winner === 1){
-			$("#opponentScore").html(parseInt($("#opponentScore").html()) + 1)
+			opponentScore++
+			$("#opponentScore").html(opponentScore)
 		}
-		progress(matchTimer, $("#progressBar"))
+
+		if(creatorScore + opponentScore >= bestOf){	// Best of 3
+			$("#progressBar").hide()
+			let victor = "#creatorAccHid"	// Assume the victor was the creator
+
+			if(opponentScore > creatorScore){	// Check otherwise
+				victor = "#opponentAccHid"
+			}
+
+			if(player === $("#matchModal").find(victor).html()){	// Toggle victory/defeat text properly
+				$("#victory").show()
+			}else {
+				$("#defeat").show()
+			}
+		}else{
+			progress(matchTimer, $("#progressBar"))	// No one has won yet, so restart timer
+		}
 	})
 }

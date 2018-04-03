@@ -11,6 +11,7 @@ address:		Ethernet address associated to contract
 abi:			Application Binary Interface of that contract (a massive json defining contract func/returns/etc.)
 zeroAcc:		The zero account. Essentially a grave
 matchTimer:		Time given to a player to make a move in an RPS match
+bestOf:			The 'best of' number of games. Typically a best of 3
 PollTimes:		A dictionary of poll time specifications for polling
 PromiseCode:	A dictionary of promise codes that may be resolved/rejected with through promises 
 MoveMap:		A mapping of moves (rps) to numerical values
@@ -518,6 +519,7 @@ const abi = [
 ]
 const zeroAcc = "0x0000000000000000000000000000000000000000"
 const matchTimer = 30
+const bestOf = 3
 
 const PollTimes = Object.freeze({
 	AccCheck: 250,

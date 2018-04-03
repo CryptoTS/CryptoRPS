@@ -61,18 +61,20 @@
         <div>
             <!-- The Modal -->
             <div class="modal" id="matchModal" tabindex="-1" role="dialog" aria-hidden="true">
-                <div id="matchId" val="" hidden></div>
+                <div id="matchId" hidden></div>
                 <div class="modal-content">
                     <div class="modal-header row">
                         <div class="col-sm modal-title">
                             <div class="row">
-                                <h2 class="col-sm" id="creatorAcc" style="margin: 0 auto;">0xAE16C</h2>
+                                <div id="creatorAccHid" hidden></div>
+                                <h2 class="col-sm" id="creatorAcc" style="margin: 0 auto;">0x00000</h2>
                                 <h2 class="col-sm" id="creatorScore" style="margin: 0 auto;">0</h2>
                             </div>
                         </div>
                         <div class="col-sm modal-title">
                             <div class="row">
-                                <h2 class="col-sm" id="opponentAcc" style="margin: 0 auto;">0xAE16C</h2>
+                                <div id="opponentAccHid" hidden></div>
+                                <h2 class="col-sm" id="opponentAcc" style="margin: 0 auto;">0x00000</h2>
                                 <h2 class="col-sm" id="opponentScore" style="margin: 0 auto;">0</h2>
                             </div>
                         </div>
@@ -105,6 +107,12 @@
                         <div id="progressBar">
                             <div id="textOverlay"></div>
                             <div id="bar"></div>
+                        </div>
+                        <div id="victory" class="modal-title" style="display: none">
+                            <h1 class="matchResults">You win!</h1>
+                        </div>
+                        <div id="defeat" class="modal-title" style="display: none">
+                            <h1 class="matchResults">You lost...</h1>
                         </div>
                     </div>
                 </div>

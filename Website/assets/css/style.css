@@ -137,6 +137,10 @@ img[class] {
 	font-size: 22px;
 }
 
+.matchResults { 
+	font-weight: bold;
+}
+
 /* The Close Button */
 /*
 .close {
