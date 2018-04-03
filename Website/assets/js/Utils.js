@@ -336,8 +336,8 @@ function createEventFactory(events){
 
 // Return 0 if creator won, 1 if opponent won, -1 if it was a tie
 function getWinner(){
-	let creatorMove = parseInt($($("#creatorHand")[0]).find("#move")[0].value)
-	let opponentMove = parseInt($($("#opponentHand")[0]).find("#move")[0].value)
+	let creatorMove = parseInt($($("#creatorHand")[0]).find("#move")[0].innerHTML)
+	let opponentMove = parseInt($($("#opponentHand")[0]).find("#move")[0].innerHTML)
 
 	if(creatorMove === opponentMove){
 		return -1

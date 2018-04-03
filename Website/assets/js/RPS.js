@@ -184,7 +184,7 @@ function testShoot(strBtn){
 
 	stopProgress()
 	
-	setHand(cHand, "rock")
+	setHand(cHand, "rock")	// Have both hands reset to rock imgs before moving
 	setHand(oHand, "rock")
 
 	Promise.all([
