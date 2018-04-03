@@ -111,6 +111,10 @@ function progress(timeTotal, $element) {
 	}, 100)
 };
 
+function stopProgress(){
+	clearInterval(timerUpdate)
+}
+
 
 // Moves the hand up and down
 const moveHand = function (handElem) {
@@ -145,6 +149,7 @@ const moveHand = function (handElem) {
 // Sets the specified hand elemnt to the specified move from MoveMap
 const setHand = function(handElem, move){
 	let handImg = $(handElem).find('img')[0]
+	$(handElem).find("#move").html(MoveMap[move])
 	switch(MoveMap[move]){
 		case 0:
 			handImg.src = "assets/images/RockReady.png"
@@ -153,7 +158,7 @@ const setHand = function(handElem, move){
 			handImg.src = "assets/images/Paper.png"
 			break
 		case 2:
-			handImg.src = "assets/images/Paper.png"
+			handImg.src = "assets/images/Scissor.png"
 			break
 	}
 }
@@ -326,6 +331,25 @@ function createEventFactory(events){
 		})
 
 		insertListing(matchData)
+	}
+}
+
+// Return 0 if creator won, 1 if opponent won, -1 if it was a tie
+function getWinner(){
+	let creatorMove = parseInt($($("#creatorHand")[0]).find("#move")[0].value)
+	let opponentMove = parseInt($($("#opponentHand")[0]).find("#move")[0].value)
+
+	if(creatorMove === opponentMove){
+		return -1
+	}
+	if(creatorMove === 0 && opponentMove == 2){
+		return 0
+	}else if(creatorMove === 1 && opponentMove == 0){
+		return 0
+	}else if(creatorMove === 2 && opponentMove == 1){
+		return 0
+	}else{
+		return 1 
 	}
 }
 
