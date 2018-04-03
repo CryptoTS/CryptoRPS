@@ -63,16 +63,30 @@
             <div class="modal" id="matchModal" tabindex="-1" role="dialog" aria-hidden="true">
                 <div id="matchId" val="" hidden></div>
                 <div class="modal-content">
-                    <div class="modal-header">
-                         <h4 class="modal-title" style="margin: 0 auto" id="myModalLabel">Score Goes Here</h4>
+                    <div class="modal-header row">
+                        <div class="col-sm modal-title">
+                            <div class="row">
+                                <h2 class="col-sm" id="creatorAcc" style="margin: 0 auto;">0xAE16C</h2>
+                                <h2 class="col-sm" id="creatorScore" style="margin: 0 auto;">0</h2>
+                            </div>
+                        </div>
+                        <div class="col-sm modal-title">
+                            <div class="row">
+                                <h2 class="col-sm" id="opponentAcc" style="margin: 0 auto;">0xAE16C</h2>
+                                <h2 class="col-sm" id="opponentScore" style="margin: 0 auto;">0</h2>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-body container">
-                        <div id="rpsOutcomes" class="row rpsOutcomes">
-                            <div id="creator" class="col-sm player creator">
+                        <div class="row rpsOutcomes">
+                            <div class="col-sm player creator" id="creatorHand">
                                 <img class="obj-fill_contain" src="assets/images/RockReady.png">
+                                <div id="move" hidden></div>
                             </div>
-                            <div id="opponent" class="col-sm player opponent">
+
+                            <div class="col-sm player opponent" id="opponentHand">
                                 <img class="obj-fill_contain" src="assets/images/RockReady.png">
+                                <div id="move" hidden></div>
                             </div>
                         </div>
                         <div class="row rpsOptions">

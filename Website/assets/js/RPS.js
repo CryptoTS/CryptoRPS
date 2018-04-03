@@ -42,6 +42,7 @@ function shoot(btn){
 	// Then contact backend which move has been made by which player
 	console.log(player + " played " + move + "(" + MoveMap[move] + ") for match " + matchId + "!")
 
+
 }
 
 // Creates a match on the contract, if the user is allowed to
@@ -158,5 +159,46 @@ function insertListing(match){
 			counter++
 			prevDiv = $(this) // Set prevDiv to this Div, and continue on with loop
 		}
+	})
+}
+
+
+function testJoin(){
+	let opAcc = "0x0AE15B183572D..."
+	let matchId = -1
+	$("#matchModal").find("#matchId").val(String(matchId));
+	$("#matchModal").find("#creatorAcc").html(String(curAcc).substring(0, 7).toUpperCase());
+	$("#matchModal").find("#opponentAcc").html(String(opAcc).substring(0, 7).toUpperCase());
+
+	$("#matchModal").modal("show")	// Activative game-play modal
+	progress(matchTimer, $("#progressBar"))
+}
+
+function testShoot(strBtn){
+	let player = curAcc;
+	let matchId = $("#matchModal").find("#matchId").val();
+	let psuedoMove = ["rock", "paper", "scissor"][Math.floor(Math.random() * 3)]
+
+	let cHand = $("#matchModal").find("#creatorHand")[0]
+	let oHand = $("#matchModal").find("#opponentHand")[0]
+
+	stopProgress()
+	
+	setHand(cHand, "rock")
+	setHand(oHand, "rock")
+
+	Promise.all([
+		moveHand(cHand).then(() => moveHand(cHand)).then(() => moveHand(cHand))
+		.then(() => setHand(cHand, strBtn)),
+		moveHand(oHand).then(() => moveHand(oHand)).then(() => moveHand(oHand))
+		.then(() => setHand(oHand, psuedoMove))
+	]).then(() => {
+		let winner = getWinner()
+		if(winner === 0){
+			$("#creatorScore").html(parseInt($("#creatorScore").html()) + 1)
+		}else if (winner === 1){
+			$("#opponentScore").html(parseInt($("#opponentScore").html()) + 1)
+		}
+		progress(matchTimer, $("#progressBar"))
 	})
 }
