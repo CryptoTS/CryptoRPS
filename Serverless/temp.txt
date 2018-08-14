@@ -1,0 +1,1 @@
+Have match Queue to MatchCreated game restriction logic go here. More specifically, when the player hits 'Create Match', store that fact here. Once the Match has been created on the blockchain, remove that fact from here. Use this data to check if player can create match

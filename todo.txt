@@ -1,0 +1,10 @@
+1) _pollTxns fixed part of a BUG. To fully fix bug, _pollTxn will need to be put on back-end. This is a BUG
+	-- For the most part resolved. Utilizing sessionStorage to resolve refresh bug
+2) JS Events not firing when solidity contract events fire. I think this might be a web3js bug...
+	2a) Workaround by continuously polling getPastEvents() function! Work on this!
+3) COMPLETE - Disable join button once opponent has joined
+	3a) Maybe find a way to display something when a person has started a transaction to join a match
+4) Execute actual play once both parties have joined
+	4a) Set timelimit on move selection (30 sec?)
+	4b) Return funds to players if neither plays a first move after timelimit ends
+	4c) If a player plays a move, while the other players doesn't after timelimit ends, force other player to play losing move (?)

@@ -2,17 +2,22 @@
 <html lang="en">
 
 <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Our RPS Site</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/main.css">
-    <!-- <script src="assets/web3.html"></script> -->
-    <link href="assets/css/css.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="assets/bagImages/favicon.ico" sizes="32x32">
-    <link rel="icon" type="image/png" href="assets/bagImages/favicon.ico" sizes="16x16">
+    <link rel="icon" type="image/png" href="assets/images/favicon.ico" sizes="32x32">
+    <link rel="icon" type="image/png" href="assets/images/favicon.ico" sizes="16x16">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- Bootstrap core CSS -->
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material Design Bootstrap -->
+    <link href="assets/css/mdb.min.css" rel="stylesheet">
+    <!-- Custom styles -->
+    <link href="assets/css/style.css" rel="stylesheet">
+
     <style>
         li {
             font-family: Impact, Charcoal, sans-serif;
@@ -26,7 +31,7 @@
 </head>
 
 <body>
-    <div class="container" background:="" transparent;="">
+    <div class="container">
         <header>
             <nav class="navbar navbar-light navbar-fixed-top" style="background-color: #C0C0C0;">
                 <div class="container-fluid">
@@ -53,13 +58,126 @@
                <center> Play your friends in Rock, Paper, Scissors! </center>
             </b>
         </h1>
+        <div>
+            <!-- The Modal -->
+            <div class="modal" id="matchModal" tabindex="-1" role="dialog" aria-hidden="true">
+                <div id="matchId" hidden></div>
+                <div class="modal-content">
+                    <div class="modal-header row">
+                        <div class="col-sm modal-title">
+                            <div class="row">
+                                <div id="creatorAccHid" hidden></div>
+                                <h2 class="col-sm" id="creatorAcc" style="margin: 0 auto;">0x00000</h2>
+                                <h2 class="col-sm" id="creatorScore" style="margin: 0 auto;">0</h2>
+                            </div>
+                        </div>
+                        <div class="col-sm modal-title">
+                            <div class="row">
+                                <div id="opponentAccHid" hidden></div>
+                                <h2 class="col-sm" id="opponentAcc" style="margin: 0 auto;">0x00000</h2>
+                                <h2 class="col-sm" id="opponentScore" style="margin: 0 auto;">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body container">
+                        <div class="row rpsOutcomes">
+                            <div class="col-sm player creator" id="creatorHand">
+                                <img class="obj-fill_contain" src="assets/images/RockReady.png">
+                                <div id="move" hidden></div>
+                            </div>
+
+                            <div class="col-sm player opponent" id="opponentHand">
+                                <img class="obj-fill_contain" src="assets/images/RockReady.png">
+                                <div id="move" hidden></div>
+                            </div>
+                        </div>
+                        <div class="row rpsOptions">
+                            <div class="col-sm option image" id="rock" onclick="shoot(this)">
+                                <img class="obj-fill_contain" src="assets/images/RockReady.png"> 
+                            </div>
+                            <div class="col-sm option image" id="paper" onclick="shoot(this)">
+                                <img class="obj-fill_contain" src="assets/images/Paper.png">
+                            </div>
+                            <div class="col-sm option image" id="scissor" onclick="shoot(this)">
+                                <img class="obj-fill_contain" src="assets/images/Scissor.png">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div id="progressBar">
+                            <div id="textOverlay"></div>
+                            <div id="bar"></div>
+                        </div>
+                        <div id="victory" class="modal-title" style="display: none">
+                            <h1 class="matchResults">You win!</h1>
+                        </div>
+                        <div id="defeat" class="modal-title" style="display: none">
+                            <h1 class="matchResults">You lost...</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div align="right">
+                <div>
+                    <input id="ethAmount" type="number" step="0.25" value="0">
+                    <button id="createMatchBtn" onclick="createMatch()" disabled="">Create RPS Match</button>
+                </div>
+            </div>
+            <div align="center">
+                <h2>Make your move!</h2>
+                <div id="matchList">
+                    <div class="match" id="topMatch"> 
+                        <!-- Used to append an RPS match to the top of the list -->
+                    </div>
+                    <!-- <div class="match" id="0x...">
+                        <div>
+                            <span>id: </span>
+                            <span id="matchId"></span>
+                            <span>Creator: </span>
+                            <span id="creAcc">0x3894712903</span>
+                            <span>---</span>
+                            <span>Opponent: </span>
+                            <span id="oppAcc">No Opponent</span>
+                            <span>---</span>
+                            <span>Amount: </span>
+                            <span id="chalAmount">0.23</span>
+                            <span> Eth</span>
+                        </div>
+                        <div>
+                            <button id="rock" onclick="shoot(this)">Rock</button>
+                            <button id="paper" onclick="shoot(this)">Paper</button>
+                            <button id="scissor" onclick="shoot(this)">Scissor</button>
+                            <button style="margin-left: 60px;" id="joinMatchBtn" onclick="joinMatch(this)">Join</button>
+                        </div>
+                        <br><br>
+                    </div> -->
+                    <div class="match" id="botMatch"> 
+                        <!-- Used to append an RPS match to the top of the list -->
+                    </div>
+                </div>
+            </div>
+        </div>
         <footer>
             <p> </p>
             <center> Made by some college kids </center>
             <p></p>
         </footer>
-        <script src="assets/js/jquery-3.js"></script>
-        <script src="assets/js/mystery.js"></script>
+        <script src="assets/js/web3-beta.31.min.js"></script>
+
+        <!-- SCRIPTS -->
+        <!-- JQuery -->
+        <script type="text/javascript" src="assets/js/jquery-3.2.1.min.js"></script>
+        <!-- Bootstrap tooltips -->
+        <script type="text/javascript" src="assets/js/popper.min.js"></script>
+        <!-- Bootstrap core JavaScript -->
+        <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
+        <!-- MDB core JavaScript -->
+        <script type="text/javascript" src="assets/js/mdb.min.js"></script>
+        
+        <script src="assets/js/Setup.js"></script>
+        <script src="assets/js/Utils.js"></script>
+        <script src="assets/js/RPS.js"></script>
     </div>
 </body>
 
